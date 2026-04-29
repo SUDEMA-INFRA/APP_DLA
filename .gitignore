@@ -36,3 +36,5 @@ google-services.json
 # python
 venv
 .env
+__pycache__/
+*.pyc
