@@ -21,5 +21,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
     
-    # We can override destroy if we want soft delete or other logic
-    # but ModelViewSet default is fine for now.
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        return Response(status=204)
