@@ -1,5 +1,5 @@
 from authentication.models import CustomUser
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from authentication.serializers import RegisterSerializer, UserSerializer
@@ -16,8 +16,10 @@ class MeView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-class UserListView(generics.ListAPIView):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
     
+    # We can override destroy if we want soft delete or other logic
+    # but ModelViewSet default is fine for now.
