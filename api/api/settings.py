@@ -14,6 +14,7 @@ import os
 import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'authentication',
+    'vistorias',
     'drf_spectacular',
     'corsheaders',
 ]
@@ -149,3 +151,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 if not CORS_ALLOWED_ORIGINS[0]: # Handle empty string from getenv
     CORS_ALLOWED_ORIGINS = []
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  # Token vale por 1 dia
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30), # Refresh vale por 7 dias
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

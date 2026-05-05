@@ -1,8 +1,12 @@
 from authentication.models import CustomUser
 from rest_framework import generics, permissions, viewsets
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from authentication.serializers import RegisterSerializer, UserSerializer
+from authentication.serializers import RegisterSerializer, UserSerializer, CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
