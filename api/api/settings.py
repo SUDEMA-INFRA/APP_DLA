@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
+# Load .env file (located in the root directory, one level up from BASE_DIR)
+load_dotenv(BASE_DIR.parent / '.env', override=True)
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
@@ -145,6 +145,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 if not CORS_ALLOWED_ORIGINS[0]: # Handle empty string from getenv
     CORS_ALLOWED_ORIGINS = []
