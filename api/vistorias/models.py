@@ -16,6 +16,7 @@ class Vistoria(models.Model):
         ('sincronizada', 'Sincronizada'),
     ]
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False, db_index=True)
+    local_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     processo_n = models.CharField(max_length=20, null=True, blank=True)
     requerente = models.CharField(max_length=200, null=True, blank=True)
     municipio = models.ForeignKey(Municipio, on_delete=models.CASCADE, related_name='vistorias', null=True, blank=True)
@@ -28,7 +29,7 @@ class Vistoria(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Vistoria {self.processo_n} - {self.user.cpf if hasattr(self.user, 'cpf') else self.user}"
+        return f"{self.id} - Vistoria {self.processo_n} - {self.user.cpf if hasattr(self.user, 'cpf') else self.user}"
 
 class VistoriaSupressao(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False, db_index=True)

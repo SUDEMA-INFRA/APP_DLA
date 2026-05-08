@@ -19,9 +19,22 @@ class VistoriaViewSet(viewsets.ModelViewSet):
         local_id = request.data.get('local_id')
         
         # Lógica de idempotência: Verifica se já existe uma vistoria com este local_id para este usuário
-        existing = Vistoria.objects.filter(user=request.user, local_id=local_id).first()
-        if existing:
-            serializer = self.get_serializer(existing)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        if local_id:
+            existing = Vistoria.objects.filter(user=request.user, local_id=local_id).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             
         return super().create(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
