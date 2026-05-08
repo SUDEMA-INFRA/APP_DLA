@@ -1,7 +1,12 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from .models import Vistoria
-from .serializers import VistoriaSerializer
+from .models import Vistoria, Municipio
+from .serializers import VistoriaSerializer, MunicipioSerializer
+
+class MunicipioViewSet(viewsets.ModelViewSet):
+    serializer_class = MunicipioSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Municipio.objects.all()
 
 class VistoriaViewSet(viewsets.ModelViewSet):
     serializer_class = VistoriaSerializer
