@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 hover:shadow-md transition-shadow">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-4 hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Visão Geral de Vistorias</CardTitle>
             <CardDescription>
@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="col-span-3 hover:shadow-md transition-shadow">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3 hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle>Atividades Recentes</CardTitle>
             <CardDescription>

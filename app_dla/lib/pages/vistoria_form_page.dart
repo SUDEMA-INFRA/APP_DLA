@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../services/database_helper.dart';
 import '../services/vistoria_service.dart';
+import '../utils/municipios.dart';
 
 class VistoriaFormPage extends StatefulWidget {
   final int userId;
@@ -60,15 +61,7 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
     'Agricultura',
   ];
 
-  final List<Map<String, dynamic>> _municipios = [
-    {'id': '1', 'nome': 'João Pessoa'},
-    {'id': '2', 'nome': 'Campina Grande'},
-    {'id': '3', 'nome': 'Cabedelo'},
-    {'id': '4', 'nome': 'Santa Rita'},
-    {'id': '5', 'nome': 'Patos'},
-    {'id': '6', 'nome': 'Sousa'},
-    {'id': '7', 'nome': 'Cajazeiras'},
-  ];
+  final List<Map<String, dynamic>> _municipios = List<Map<String, dynamic>>.from(Municipios.list);
 
   @override
   void initState() {
@@ -330,21 +323,41 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
               ),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _selectedMunicipio,
-              hint: const Text('Selecione o Município'),
-              decoration: const InputDecoration(
-                labelText: 'Município',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.location_city),
-              ),
-              items: _municipios.map((m) {
-                return DropdownMenuItem<String>(
-                  value: m['id'].toString(),
-                  child: Text(m['nome']),
+            FormField<String>(
+              initialValue: _selectedMunicipio,
+              validator: (value) {
+                if (_selectedMunicipio == null) {
+                  return 'Por favor, selecione um município';
+                }
+                return null;
+              },
+              builder: (state) {
+                return InkWell(
+                  onTap: () => _showMunicipioSelector(state),
+                  borderRadius: BorderRadius.circular(4),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Município',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.location_city),
+                      suffixIcon: const Icon(Icons.arrow_drop_down),
+                      errorText: state.errorText,
+                    ),
+                    child: Text(
+                      _selectedMunicipio == null
+                          ? 'Selecione o Município'
+                          : List<Map<String, dynamic>>.from(_municipios).firstWhere(
+                              (m) => m['id'].toString() == _selectedMunicipio,
+                              orElse: () => <String, String>{'nome': 'Selecione o Município'},
+                            )['nome']?.toString() ?? '',
+                      style: TextStyle(
+                        color: _selectedMunicipio == null ? Colors.grey[600] : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 );
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedMunicipio = val),
+              },
             ),
             const SizedBox(height: 16),
 
@@ -619,5 +632,109 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
     _suinoculturaQtdGalpoesController.dispose();
     _suinoculturaQtdAnimaisController.dispose();
     super.dispose();
+  }
+
+  void _showMunicipioSelector(FormFieldState<String> state) {
+    String searchLocal = '';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = _municipios.where((m) {
+              final nome = (m['nome'] ?? '').toString().toLowerCase();
+              return nome.contains(searchLocal.toLowerCase());
+            }).toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Selecione o Município',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      autofocus: true,
+                      onChanged: (val) {
+                        setModalState(() {
+                          searchLocal = val;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Pesquisar município...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'Nenhum município encontrado.',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final m = filtered[index];
+                                final isSelected = m['id'].toString() == _selectedMunicipio;
+                                return ListTile(
+                                  title: Text(
+                                    m['nome']?.toString() ?? '',
+                                    style: TextStyle(
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                  trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedMunicipio = m['id'].toString();
+                                    });
+                                    state.didChange(m['id'].toString());
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

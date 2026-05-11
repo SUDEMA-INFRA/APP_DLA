@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/vistoria_service.dart';
 import 'vistoria_form_page.dart';
+import '../utils/municipios.dart';
 
 class VistoriaDetailPage extends StatefulWidget {
   final Vistoria vistoria;
@@ -28,16 +29,7 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
   }
 
   String _getMunicipioNome(int? id) {
-    switch (id) {
-      case 1: return 'João Pessoa';
-      case 2: return 'Campina Grande';
-      case 3: return 'Cabedelo';
-      case 4: return 'Santa Rita';
-      case 5: return 'Patos';
-      case 6: return 'Sousa';
-      case 7: return 'Cajazeiras';
-      default: return 'Não especificado';
-    }
+    return Municipios.getName(id);
   }
 
   Future<void> _confirmDelete(BuildContext context) async {

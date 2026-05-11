@@ -16,7 +16,7 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users, LogOut, Shield, User as UserIcon, Menu, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, User as UserIcon, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -92,7 +92,7 @@ const DashboardLayout: React.FC = () => {
       </Sidebar>
 
       <SidebarInset>
-        <header className="h-16 flex items-center gap-4 px-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm sticky top-0 z-20">
+        <header className="h-16 flex items-center gap-4 px-4 sm:px-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm sticky top-0 z-20">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
           <div className="flex-1">
@@ -101,7 +101,7 @@ const DashboardLayout: React.FC = () => {
             </h1>
           </div>
         </header>
-        <main className="flex-1 p-6 overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
           <div className="space-y-6">
             <Outlet />
           </div>

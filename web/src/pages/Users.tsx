@@ -188,7 +188,7 @@ const UsersPage: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="rounded-md border border-slate-200 dark:border-slate-800 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-slate-50 dark:bg-slate-900">
                 <TableRow>

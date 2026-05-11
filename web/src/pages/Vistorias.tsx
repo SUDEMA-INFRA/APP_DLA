@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import api from '@/lib/api';
 import { 
   Table, 
@@ -26,12 +26,15 @@ import {
   XCircle, 
   Eye, 
   Download, 
-  Layers,
   Activity,
   Trees,
   Egg,
   Maximize2,
-  Smartphone
+  Smartphone,
+  Beef,
+  Fish,
+  Factory,
+  Sprout
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -64,6 +67,7 @@ interface VistoriaData {
     longitude?: number;
     status?: string;
     municipio?: number | string;
+    municipio_nome?: string;
     tipo?: string;
     dispositivo?: string;
     supressao?: {
@@ -152,7 +156,31 @@ const VistoriasPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState('todos');
   const [selectedUser, setSelectedUser] = useState('todos');
-  const [selectedStatus, setSelectedStatus] = useState('todos');
+  const [selectedMunicipio, setSelectedMunicipio] = useState('todos');
+  const [selectedDevice, setSelectedDevice] = useState('todos');
+  const selectedStatus = 'todos';
+
+  // Extract unique municipios present in current vistorias list
+  const uniqueMunicipios = useMemo(() => {
+    const map = new Map<number | string, string>();
+    vistorias.forEach(v => {
+      if (v.data.municipio) {
+        map.set(v.data.municipio, v.data.municipio_nome || `Município: ${v.data.municipio}`);
+      }
+    });
+    return Array.from(map.entries()).map(([id, nome]) => ({ id: id.toString(), nome }));
+  }, [vistorias]);
+
+  // Extract unique devices present in current vistorias list
+  const uniqueDevices = useMemo(() => {
+    const set = new Set<string>();
+    vistorias.forEach(v => {
+      if (v.data.dispositivo) {
+        set.add(v.data.dispositivo);
+      }
+    });
+    return Array.from(set).sort();
+  }, [vistorias]);
 
   // Detail Dialog state
   const [isOpen, setIsOpen] = useState(false);
@@ -214,10 +242,14 @@ const VistoriasPage: React.FC = () => {
 
     const matchesUser = selectedUser === 'todos' || v.user.toString() === selectedUser;
 
-    const status = (v.data.status || 'sincronizada').toLowerCase();
-    const matchesStatus = selectedStatus === 'todos' || status === selectedStatus.toLowerCase();
+    const matchesMunicipio = selectedMunicipio === 'todos' || v.data.municipio?.toString() === selectedMunicipio;
 
-    return matchesSearch && matchesType && matchesUser && matchesStatus;
+    const matchesDevice = selectedDevice === 'todos' || v.data.dispositivo === selectedDevice;
+
+    const status = (v.data.status || 'sincronizada').toLowerCase();
+    const matchesStatus = selectedStatus === 'todos' || status === selectedStatus;
+
+    return matchesSearch && matchesType && matchesUser && matchesMunicipio && matchesDevice && matchesStatus;
   });
 
   const handleOpenDetails = (vistoria: VistoriaData) => {
@@ -305,9 +337,16 @@ const VistoriasPage: React.FC = () => {
 
   // Stats calculation
   const totalCount = vistorias.length;
-  const supressaoCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('supressão')).length;
+  const supressaoCount = vistorias.filter(v => {
+    const t = getVistoriaType(v).toLowerCase();
+    return t.includes('supressão') || t.includes('supressao');
+  }).length;
   const aviculturaCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('avicultura')).length;
   const suinoculturaCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('suinocultura')).length;
+  const bovinoculturaCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('bovinocultura')).length;
+  const aquiculturaCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('aquicultura')).length;
+  const sucroalcooleiroCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('sucroalcooleiro')).length;
+  const agriculturaCount = vistorias.filter(v => getVistoriaType(v).toLowerCase().includes('agricultura')).length;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -325,58 +364,104 @@ const VistoriasPage: React.FC = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="relative overflow-hidden transition-all hover:shadow-md">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold tracking-wider">Total Geral</CardDescription>
-            <CardTitle className="text-3xl font-black">{loading ? <Skeleton className="h-9 w-16" /> : totalCount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Vistorias recebidas no servidor.</p>
-          </CardContent>
-          <div className="absolute right-3 bottom-3 text-slate-200 dark:text-slate-800 -z-10">
-            <ClipboardCheck className="w-12 h-12 stroke-[1.5]" />
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
+        
+        {/* Card: Total Geral */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Total</CardDescription>
+            <CardTitle className="text-xl font-black mt-1 text-slate-800 dark:text-slate-100">{loading ? <Skeleton className="h-7 w-12" /> : totalCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Vistorias</span>
+            <ClipboardCheck className="w-4 h-4 text-slate-400 stroke-[2]" />
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-4 border-l-emerald-500">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400">Supressão Vegetal</CardDescription>
-            <CardTitle className="text-3xl font-black text-emerald-700 dark:text-emerald-400">{loading ? <Skeleton className="h-9 w-16" /> : supressaoCount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Laudos florestais e ambientais.</p>
-          </CardContent>
-          <div className="absolute right-3 bottom-3 text-emerald-100 dark:text-emerald-950/30 -z-10">
-            <Trees className="w-12 h-12 stroke-[1.5]" />
+        {/* Card: Supressão Vegetal */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-emerald-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400">Supressão</CardDescription>
+            <CardTitle className="text-xl font-black text-emerald-700 dark:text-emerald-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : supressaoCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Florestal</span>
+            <Trees className="w-4 h-4 text-emerald-500 stroke-[2]" />
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-4 border-l-amber-500">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400">Avicultura</CardDescription>
-            <CardTitle className="text-3xl font-black text-amber-700 dark:text-amber-400">{loading ? <Skeleton className="h-9 w-16" /> : aviculturaCount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Atividades de criação de aves.</p>
-          </CardContent>
-          <div className="absolute right-3 bottom-3 text-amber-100 dark:text-amber-950/30 -z-10">
-            <Egg className="w-12 h-12 stroke-[1.5]" />
+        {/* Card: Avicultura */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-amber-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400">Avicultura</CardDescription>
+            <CardTitle className="text-xl font-black text-amber-700 dark:text-amber-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : aviculturaCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Aves</span>
+            <Egg className="w-4 h-4 text-amber-500 stroke-[2]" />
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-4 border-l-pink-500">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold tracking-wider text-pink-600 dark:text-pink-400">Suinocultura</CardDescription>
-            <CardTitle className="text-3xl font-black text-pink-700 dark:text-pink-400">{loading ? <Skeleton className="h-9 w-16" /> : suinoculturaCount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">Atividades de suinocultura.</p>
-          </CardContent>
-          <div className="absolute right-3 bottom-3 text-pink-100 dark:text-pink-950/30 -z-10">
-            <Activity className="w-12 h-12 stroke-[1.5]" />
+        {/* Card: Suinocultura */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-pink-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-pink-600 dark:text-pink-400">Suíno</CardDescription>
+            <CardTitle className="text-xl font-black text-pink-700 dark:text-pink-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : suinoculturaCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Suínos</span>
+            <Activity className="w-4 h-4 text-pink-500 stroke-[2]" />
           </div>
         </Card>
+
+        {/* Card: Bovinocultura */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-indigo-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400">Bovino</CardDescription>
+            <CardTitle className="text-xl font-black text-indigo-700 dark:text-indigo-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : bovinoculturaCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Gado</span>
+            <Beef className="w-4 h-4 text-indigo-500 stroke-[2]" />
+          </div>
+        </Card>
+
+        {/* Card: Aquicultura */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-blue-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">Aquicultura</CardDescription>
+            <CardTitle className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : aquiculturaCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Peixes</span>
+            <Fish className="w-4 h-4 text-blue-500 stroke-[2]" />
+          </div>
+        </Card>
+
+        {/* Card: Sucroalcooleiro */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-purple-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400">Usinas</CardDescription>
+            <CardTitle className="text-xl font-black text-purple-700 dark:text-purple-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : sucroalcooleiroCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Usinas</span>
+            <Factory className="w-4 h-4 text-purple-500 stroke-[2]" />
+          </div>
+        </Card>
+
+        {/* Card: Agricultura */}
+        <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-lime-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
+          <div>
+            <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-lime-600 dark:text-lime-400">Lavoura</CardDescription>
+            <CardTitle className="text-xl font-black text-lime-700 dark:text-lime-400 mt-1">{loading ? <Skeleton className="h-7 w-12" /> : agriculturaCount}</CardTitle>
+          </div>
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
+            <span className="text-[10px] text-muted-foreground">Cultivo</span>
+            <Sprout className="w-4 h-4 text-lime-500 stroke-[2]" />
+          </div>
+        </Card>
+
       </div>
 
       {/* Filters Card */}
@@ -386,7 +471,7 @@ const VistoriasPage: React.FC = () => {
           <CardDescription>Use os filtros abaixo para encontrar vistorias específicas por técnico, tipo ou status.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             
             {/* Search Input */}
             <div className="relative">
@@ -427,6 +512,30 @@ const VistoriasPage: React.FC = () => {
               ))}
             </select>
 
+            {/* Município Filter */}
+            <select
+              value={selectedMunicipio}
+              onChange={(e) => setSelectedMunicipio(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300"
+            >
+              <option value="todos">Todos os Municípios</option>
+              {uniqueMunicipios.map(m => (
+                <option key={m.id} value={m.id}>{m.nome}</option>
+              ))}
+            </select>
+
+            {/* Dispositivo Filter */}
+            <select
+              value={selectedDevice}
+              onChange={(e) => setSelectedDevice(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300"
+            >
+              <option value="todos">Todos os Dispositivos</option>
+              {uniqueDevices.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+
           </div>
         </CardContent>
       </Card>
@@ -434,7 +543,7 @@ const VistoriasPage: React.FC = () => {
       {/* Main List */}
       <Card>
         <CardContent className="pt-6">
-          <div className="rounded-md border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="rounded-md border border-slate-200 dark:border-slate-800 overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-slate-50 dark:bg-slate-900">
                 <TableRow>
@@ -442,6 +551,7 @@ const VistoriasPage: React.FC = () => {
                   <TableHead>Processo / Requerente</TableHead>
                   <TableHead>Técnico</TableHead>
                   <TableHead>Tipo de Vistoria</TableHead>
+                  <TableHead>Município</TableHead>
                   <TableHead>Coordenadas</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Criado Em</TableHead>
@@ -461,6 +571,7 @@ const VistoriasPage: React.FC = () => {
                       </TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-28 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-36" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -498,6 +609,11 @@ const VistoriasPage: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>{getTypeBadge(type)}</TableCell>
+                        <TableCell>
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {v.data.municipio_nome || v.data.municipio || '-'}
+                          </span>
+                        </TableCell>
                         <TableCell>
                           {v.data.latitude && v.data.longitude ? (
                             <div className="flex items-center gap-1 font-mono text-[11px] text-slate-500">
@@ -606,8 +722,12 @@ const VistoriasPage: React.FC = () => {
                       <span className="font-mono text-[10px] text-slate-600 dark:text-slate-400">{selectedVistoria.local_id}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block">Município ID</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{selectedVistoria.data.municipio || '-'}</span>
+                      <span className="text-muted-foreground block">Município</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        {selectedVistoria.data.municipio_nome 
+                          ? `${selectedVistoria.data.municipio_nome} (${selectedVistoria.data.municipio})`
+                          : selectedVistoria.data.municipio || '-'}
+                      </span>
                     </div>
                     <div>
                       <span className="text-muted-foreground block">Coordenadas Geográficas</span>
@@ -751,10 +871,130 @@ const VistoriasPage: React.FC = () => {
                     </div>
                   )}
 
+                  {/* BOVINOCULTURA UI */}
+                  {selectedVistoria.data.bovinocultura && (
+                    <div className="space-y-4 bg-indigo-50/30 dark:bg-indigo-950/10 p-4 rounded-lg border border-indigo-100 dark:border-indigo-950/30">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block">Modelo de Criação</span>
+                          <span className="font-bold text-sm uppercase">{selectedVistoria.data.bovinocultura.modelo || '-'}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block">Área de Pastagem (hectares)</span>
+                          <span className="font-bold text-sm">{selectedVistoria.data.bovinocultura.area_ha ? `${selectedVistoria.data.bovinocultura.area_ha} ha` : '-'}</span>
+                        </div>
+                      </div>
+                      {selectedVistoria.data.bovinocultura.dessedentacao && (
+                        <div className="border-t pt-3 mt-3 text-xs">
+                          <span className="text-muted-foreground block">Dessedentação Animal</span>
+                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                            {selectedVistoria.data.bovinocultura.dessedentacao}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AQUICULTURA UI */}
+                  {selectedVistoria.data.aquicultura && (
+                    <div className="space-y-4 bg-blue-50/30 dark:bg-blue-950/10 p-4 rounded-lg border border-blue-100 dark:border-blue-950/30">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <span className="text-muted-foreground block">Quantidade de Tanques</span>
+                          <span className="font-bold text-base text-blue-700 dark:text-blue-400">{selectedVistoria.data.aquicultura.qtd_tanques || '0'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {selectedVistoria.data.aquicultura.hidrometro ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
+                          <span className="font-bold">Possui Hidrômetro</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {selectedVistoria.data.aquicultura.outorga ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
+                          <span className="font-bold">Possui Outorga</span>
+                        </div>
+                      </div>
+                      {selectedVistoria.data.aquicultura.fonte_agua && (
+                        <div className="border-t pt-3 mt-3 text-xs">
+                          <span className="text-muted-foreground block">Fonte de Abastecimento de Água</span>
+                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                            {selectedVistoria.data.aquicultura.fonte_agua}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SUCROALCOOLEIRO UI */}
+                  {selectedVistoria.data.sucroalcooleiro && (
+                    <div className="space-y-4 bg-purple-50/30 dark:bg-purple-950/10 p-4 rounded-lg border border-purple-100 dark:border-purple-950/30">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div className="flex items-center gap-2">
+                          {selectedVistoria.data.sucroalcooleiro.equipamentos_conformes ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
+                          <span className="font-bold">Equipamentos Conformes</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {selectedVistoria.data.sucroalcooleiro.armazenamento_ok ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
+                          <span className="font-bold">Armazenamento Correto</span>
+                        </div>
+                      </div>
+                      {selectedVistoria.data.sucroalcooleiro.residuos_solidos && (
+                        <div className="border-t pt-3 mt-3 text-xs">
+                          <span className="text-muted-foreground block">Destinação de Resíduos Sólidos</span>
+                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                            {selectedVistoria.data.sucroalcooleiro.residuos_solidos}
+                          </p>
+                        </div>
+                      )}
+                      {selectedVistoria.data.sucroalcooleiro.bagaco && (
+                        <div className="border-t pt-3 text-xs">
+                          <span className="text-muted-foreground block">Disposição do Bagaço</span>
+                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                            {selectedVistoria.data.sucroalcooleiro.bagaco}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AGRICULTURA UI */}
+                  {selectedVistoria.data.agricultura && (
+                    <div className="space-y-4 bg-lime-50/30 dark:bg-lime-950/10 p-4 rounded-lg border border-lime-100 dark:border-lime-950/30">
+                      <div className="grid grid-cols-1 gap-4 text-xs">
+                        {selectedVistoria.data.agricultura.cultivo && (
+                          <div>
+                            <span className="text-muted-foreground block font-semibold mb-1">Tipos de Cultivo</span>
+                            <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
+                              {selectedVistoria.data.agricultura.cultivo}
+                            </p>
+                          </div>
+                        )}
+                        {selectedVistoria.data.agricultura.cursos_hidricos_entorno && (
+                          <div className="border-t pt-3">
+                            <span className="text-muted-foreground block font-semibold mb-1">Cursos Hídricos no Entorno</span>
+                            <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
+                              {selectedVistoria.data.agricultura.cursos_hidricos_entorno}
+                            </p>
+                          </div>
+                        )}
+                        {selectedVistoria.data.agricultura.agrotoxicos && (
+                          <div className="border-t pt-3">
+                            <span className="text-muted-foreground block font-semibold mb-1">Uso de Agrotóxicos</span>
+                            <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
+                              {selectedVistoria.data.agricultura.agrotoxicos}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* FALLBACK GENERAL FORM INFO */}
                   {!selectedVistoria.data.supressao && 
                    !selectedVistoria.data.avicultura && 
-                   !selectedVistoria.data.suinocultura && (
+                   !selectedVistoria.data.suinocultura && 
+                   !selectedVistoria.data.bovinocultura && 
+                   !selectedVistoria.data.aquicultura && 
+                   !selectedVistoria.data.sucroalcooleiro && 
+                   !selectedVistoria.data.agricultura && (
                     <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center border border-dashed text-slate-500 space-y-2">
                       <Maximize2 className="w-8 h-8 text-slate-400 mx-auto" />
                       <div>Não há ficha técnica específica para esta modalidade.</div>

@@ -126,6 +126,8 @@ class VistoriaSerializer(serializers.ModelSerializer):
             data_dict[key] = ret.get(key)
         
         data_dict['municipio'] = ret.get('municipio')
+        if instance.municipio:
+            data_dict['municipio_nome'] = instance.municipio.nome
 
         # Include sub-models if they exist
         if hasattr(instance, 'supressao') and instance.supressao:
