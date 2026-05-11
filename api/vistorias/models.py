@@ -23,6 +23,7 @@ class Vistoria(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='rascunho')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='vistorias')
+    dispositivo = models.CharField(max_length=150, null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
     synced_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
