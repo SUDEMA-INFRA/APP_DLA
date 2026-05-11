@@ -555,7 +555,7 @@ const VistoriasPage: React.FC = () => {
 
       {/* Detailed Modal Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-[90vw] md:max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
           {selectedVistoria && (
             <>
               <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">

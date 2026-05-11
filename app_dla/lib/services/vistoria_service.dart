@@ -81,6 +81,16 @@ class VistoriaService {
     return maps.map((m) => Vistoria.fromMap(m)).toList();
   }
 
+  // Exclui uma vistoria localmente
+  Future<void> deleteLocalVistoria(int id) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'vistorias_local',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // Sincroniza vistorias pendentes com o servidor
   Future<bool> syncVistorias(String cpf) async {
     final db = await _dbHelper.database;
