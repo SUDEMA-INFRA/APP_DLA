@@ -16,7 +16,7 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users, LogOut, Shield, User as UserIcon, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, User as UserIcon, Menu, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
@@ -28,6 +28,7 @@ const DashboardLayout: React.FC = () => {
   const menuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { title: 'Usuários', icon: Users, path: '/users' },
+    { title: 'Vistorias', icon: ClipboardCheck, path: '/vistorias' },
   ];
 
   const handleLogout = () => {

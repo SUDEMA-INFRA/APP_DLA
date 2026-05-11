@@ -10,7 +10,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Carrega as variáveis do .env
+  // Carrega as variáveis o .env
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
