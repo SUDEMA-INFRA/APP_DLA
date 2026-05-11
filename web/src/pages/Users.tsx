@@ -119,8 +119,12 @@ const UsersPage: React.FC = () => {
         if (!dataToUpdate.password) delete (dataToUpdate as any).password;
         await api.patch(`/auth/users/${editingUser.id}/`, dataToUpdate);
       } else {
-        // Create
-        await api.post('/auth/register/', formData);
+        // Create - automatically set username equal to CPF
+        const payload = {
+          ...formData,
+          username: formData.cpf
+        };
+        await api.post('/auth/register/', payload);
       }
       setIsOpen(false);
       fetchUsers();
@@ -321,26 +325,15 @@ const UsersPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Nome de Usuário</Label>
-                <Input 
-                  id="username" 
-                  value={formData.username}
-                  onChange={(e) => setFormData({...formData, username: e.target.value})}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cpf">CPF</Label>
-                <Input 
-                  id="cpf" 
-                  value={formData.cpf}
-                  onChange={(e) => setFormData({...formData, cpf: e.target.value})}
-                  maxLength={11}
-                  required 
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="cpf">CPF</Label>
+              <Input 
+                id="cpf" 
+                value={formData.cpf}
+                onChange={(e) => setFormData({...formData, cpf: e.target.value})}
+                maxLength={11}
+                required 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>

@@ -214,7 +214,9 @@ const VistoriasPage: React.FC = () => {
   // Helper to resolve user name from id
   const getUserName = (userId: number) => {
     const user = users.find(u => u.id === userId);
-    return user ? user.username : `ID: ${userId}`;
+    return user 
+      ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username
+      : `ID: ${userId}`;
   };
 
   // Helper to determine the actual type of a vistoria
@@ -669,11 +671,115 @@ const VistoriasPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Detailed Modal Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-[90vw] md:max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[90vw] md:max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto print-dialog-content">
           {selectedVistoria && (
             <>
+              <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                  /* Reset body and print backgrounds */
+                  body {
+                    background: white !important;
+                    color: black !important;
+                    font-size: 11pt !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    overflow: visible !important;
+                  }
+                  /* Hide main dashboard layout and root completely */
+                  #root,
+                  [data-sidebar],
+                  header,
+                  main,
+                  footer {
+                    display: none !important;
+                    visibility: hidden !important;
+                  }
+                  /* Hide backdrops and dark overlays completely */
+                  div[class*="bg-black/"],
+                  div[class*="backdrop-blur"],
+                  div[class*="bg-slate-900/"] {
+                    display: none !important;
+                  }
+                  /* Reset fixed wrapper portal container to flow naturally */
+                  div[role="presentation"],
+                  div[class*="fixed inset-0"] {
+                    position: relative !important;
+                    display: block !important;
+                    background: white !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    inset: auto !important;
+                  }
+                  /* Set dialog container styles to fill the printed page and reset translations */
+                  .print-dialog-content {
+                    position: relative !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    transform: none !important;
+                    translate: none !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    background: white !important;
+                    color: black !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    display: block !important;
+                    visibility: visible !important;
+                  }
+                  .print-dialog-content * {
+                    visibility: visible !important;
+                  }
+                  /* Hide printing button block and footer in printout */
+                  .dialog-footer,
+                  button,
+                  button[class*="absolute right-4 top-4"],
+                  .print-dialog-content button,
+                  .print-dialog-content [role="button"],
+                  .print-dialog-content svg:not(.w-3.5):not(.w-4) {
+                    display: none !important;
+                    visibility: hidden !important;
+                  }
+                  /* Force grid columns to keep side-by-side A4 aspect ratio instead of wrapping */
+                  .print-dialog-content .grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                    gap: 1.5rem !important;
+                  }
+                  .print-dialog-content .md\\:col-span-1 {
+                    grid-column: span 1 / span 1 !important;
+                    display: block !important;
+                  }
+                  .print-dialog-content .md\\:col-span-2 {
+                    grid-column: span 2 / span 2 !important;
+                    display: block !important;
+                  }
+                  /* Force nested cards to show grid content clearly */
+                  .print-dialog-content .md\\:grid-cols-2 {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    gap: 1rem !important;
+                  }
+                  /* Preserve page breaks across sections cleanly */
+                  iframe {
+                    border: 1px solid #ccc !important;
+                    page-break-inside: avoid !important;
+                    max-height: 250px !important;
+                  }
+                  .card, .border, .p-4 {
+                    page-break-inside: avoid !important;
+                    background: white !important;
+                    border-color: #e2e8f0 !important;
+                  }
+                }
+              `}} />
               <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div className="flex items-center gap-2">
@@ -717,16 +823,11 @@ const VistoriasPage: React.FC = () => {
                         {selectedVistoria.data.dispositivo || 'Não informado'}
                       </span>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground block">Local UUID (Celular)</span>
-                      <span className="font-mono text-[10px] text-slate-600 dark:text-slate-400">{selectedVistoria.local_id}</span>
-                    </div>
+
                     <div>
                       <span className="text-muted-foreground block">Município</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {selectedVistoria.data.municipio_nome 
-                          ? `${selectedVistoria.data.municipio_nome} (${selectedVistoria.data.municipio})`
-                          : selectedVistoria.data.municipio || '-'}
+                        {selectedVistoria.data.municipio_nome || selectedVistoria.data.municipio || '-'}
                       </span>
                     </div>
                     <div>
@@ -750,13 +851,21 @@ const VistoriasPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Mock Coordinate Viewer Map */}
+                  {/* Live Google Maps Preview */}
                   {selectedVistoria.data.latitude && selectedVistoria.data.longitude && (
                     <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-3 text-center border space-y-2">
-                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Localização do Relatório</div>
-                      <div className="bg-slate-200 dark:bg-slate-800 h-24 rounded flex items-center justify-center border border-slate-300 dark:border-slate-700 relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                        <MapPin className="w-8 h-8 text-red-500 animate-bounce" />
+                      <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Localização da Vistoria</div>
+                      <div className="bg-slate-200 dark:bg-slate-800 h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 relative">
+                        <iframe
+                          title="Localização da Vistoria"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          loading="lazy"
+                          allowFullScreen
+                          referrerPolicy="no-referrer-when-downgrade"
+                          src={`https://maps.google.com/maps?q=${selectedVistoria.data.latitude},${selectedVistoria.data.longitude}&z=15&output=embed`}
+                        />
                       </div>
                       <a 
                         href={`https://www.google.com/maps/search/?api=1&query=${selectedVistoria.data.latitude},${selectedVistoria.data.longitude}`}
@@ -764,7 +873,7 @@ const VistoriasPage: React.FC = () => {
                         rel="noopener noreferrer"
                         className="text-[11px] text-blue-500 hover:underline block font-semibold"
                       >
-                        Ver no Google Maps →
+                        Ver no Google Maps Ampliado →
                       </a>
                     </div>
                   )}
@@ -1006,7 +1115,7 @@ const VistoriasPage: React.FC = () => {
 
               </div>
 
-              <DialogFooter className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+              <DialogFooter className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4 dialog-footer">
                 <Button variant="outline" onClick={() => setIsOpen(false)}>
                   Fechar Detalhes
                 </Button>

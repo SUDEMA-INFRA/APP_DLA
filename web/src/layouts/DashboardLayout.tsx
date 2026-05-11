@@ -76,8 +76,10 @@ const DashboardLayout: React.FC = () => {
               <UserIcon className="w-4 h-4" />
             </div>
             <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-medium truncate">{user?.username}</span>
-              <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+              <span className="text-sm font-semibold truncate">
+                {user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username}
+              </span>
+              <span className="text-xs text-muted-foreground truncate">CPF: {user?.cpf || '-'}</span>
             </div>
           </div>
           <Button 
