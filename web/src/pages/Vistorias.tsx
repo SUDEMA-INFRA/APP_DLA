@@ -1182,7 +1182,13 @@ const VistoriasPage: React.FC = () => {
                     <label className="text-sm font-semibold">Nº Processo</label>
                     <Input 
                       value={editingVistoria.data.processo_n || ''} 
-                      onChange={e => setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, processo_n: e.target.value}})} 
+                      onChange={e => {
+                        let val = e.target.value.replace(/\D/g, '');
+                        if (val.length > 10) val = val.slice(0, 10);
+                        if (val.length > 4) val = val.slice(0, 4) + '-' + val.slice(4);
+                        setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, processo_n: val}});
+                      }}
+                      placeholder="0000-000000"
                     />
                   </div>
                   <div className="space-y-1">

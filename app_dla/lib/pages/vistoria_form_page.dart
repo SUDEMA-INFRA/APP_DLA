@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import '../services/database_helper.dart';
 import '../services/vistoria_service.dart';
 import '../utils/municipios.dart';
+
+class ProcessoInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (text.length > 10) text = text.substring(0, 10);
+    
+    var newString = '';
+    if (text.length > 4) {
+      newString = '${text.substring(0, 4)}-${text.substring(4)}';
+    } else {
+      newString = text;
+    }
+
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(offset: newString.length),
+    );
+  }
+}
 
 class VistoriaFormPage extends StatefulWidget {
   final int userId;
@@ -392,8 +416,13 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _processoController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                ProcessoInputFormatter(),
+              ],
               decoration: const InputDecoration(
                 labelText: 'Número do Processo',
+                hintText: '0000-000000',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.folder_open),
               ),
