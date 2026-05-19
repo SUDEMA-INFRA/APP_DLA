@@ -48,3 +48,33 @@ class VistoriaSubModelFactory:
         # Create the sub-model instance linked to the vistoria
         sub_model_instance = model_class.objects.create(vistoria=vistoria, **sub_model_fields)
         return sub_model_instance
+
+    @classmethod
+    def update_sub_model(cls, vistoria, tipo, payload_data):
+        """
+        Updates the existing sub-model linked to the Vistoria instance 
+        based on the 'tipo' and new payload_data.
+        """
+        model_class = cls.get_model_class(tipo)
+        if not model_class:
+            return None
+
+        # Extract nested data if it exists under the tipo name (e.g. 'bovinocultura')
+        tipo_key = str(tipo).lower().strip()
+        data_to_extract = payload_data.get(tipo_key, payload_data)
+        if not isinstance(data_to_extract, dict):
+            data_to_extract = payload_data
+
+        # Try to fetch the existing sub-model
+        sub_model_instance = model_class.objects.filter(vistoria=vistoria).first()
+        if not sub_model_instance:
+            # If it doesn't exist for some reason, create it
+            return cls.create_sub_model(vistoria, tipo, payload_data)
+
+        # Update fields
+        for key, value in data_to_extract.items():
+            if hasattr(model_class, key) and key not in ['id', 'vistoria']:
+                setattr(sub_model_instance, key, value)
+
+        sub_model_instance.save()
+        return sub_model_instance

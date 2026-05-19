@@ -16,7 +16,7 @@ import {
   CardDescription 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserPlus, Search, MoreHorizontal, ShieldCheck, User, Trash2, Edit2, CheckCircle2, XCircle } from 'lucide-react';
+import { UserPlus, Search, MoreHorizontal, ShieldCheck, User, Trash2, Edit2, CheckCircle2, XCircle, Key } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -154,6 +154,18 @@ const UsersPage: React.FC = () => {
     }
   };
 
+  const handleResetPassword = async (user: UserData) => {
+    if (window.confirm(`Deseja realmente resetar a senha do usuário ${user.username} para o padrão (12345678)?`)) {
+      try {
+        await api.post(`/auth/users/${user.id}/reset_password/`);
+        alert(`A senha do usuário ${user.username} foi resetada com sucesso para 12345678.`);
+      } catch (error) {
+        console.error('Failed to reset password', error);
+        alert('Erro ao resetar senha.');
+      }
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.username.toLowerCase().includes(search.toLowerCase()) ||
     user.cpf.includes(search) ||
@@ -275,6 +287,10 @@ const UsersPage: React.FC = () => {
                               <DropdownMenuItem onClick={() => handleToggleStaff(user)}>
                                 <ShieldCheck className="mr-2 h-4 w-4" />
                                 {user.is_staff ? 'Remover Admin' : 'Tornar Admin'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleResetPassword(user)}>
+                                <Key className="mr-2 h-4 w-4" />
+                                Resetar Senha
                               </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />

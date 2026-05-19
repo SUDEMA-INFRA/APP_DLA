@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from authentication.serializers import RegisterSerializer, UserSerializer, CustomTokenObtainPairSerializer
 
+from rest_framework.decorators import action
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -30,3 +32,10 @@ class UserViewSet(viewsets.ModelViewSet):
         instance.is_active = False
         instance.save()
         return Response(status=204)
+
+    @action(detail=True, methods=['post'], url_path='reset_password')
+    def reset_password(self, request, pk=None):
+        user = self.get_object()
+        user.set_password('12345678')
+        user.save()
+        return Response({'status': 'password reset successful'})
