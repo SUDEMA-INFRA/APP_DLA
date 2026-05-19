@@ -27,7 +27,7 @@ const DashboardLayout: React.FC = () => {
 
   const menuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/' },
-    { title: 'Usuários', icon: Users, path: '/users' },
+    ...(user?.is_staff ? [{ title: 'Usuários', icon: Users, path: '/users' }] : []),
     { title: 'Vistorias', icon: ClipboardCheck, path: '/vistorias' },
   ];
 

@@ -28,7 +28,82 @@ class VistoriaViewSet(viewsets.ModelViewSet):
                 serializer = self.get_serializer(existing)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Capture old state for diff
+        old_serializer = self.get_serializer(instance)
+        old_data = old_serializer.data
+        
+        # Standard update for root model
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Handle dynamic SubModel update
+        tipo = request.data.get('data', {}).get('tipo') or request.data.get('tipo')
+        if tipo:
+            from .factories import VistoriaSubModelFactory
+            
+            nested_data = request.data.get('data', {})
+            if not isinstance(nested_data, dict):
+                nested_data = {}
+            merged_source = {**request.data, **nested_data}
+            
+            # Normalize keys
+            normalized_source = {}
+            for k, v in merged_source.items():
+                norm_k = k.replace('qnt_', 'qtd_').replace('quantidade_', 'qtd_')
+                normalized_source[norm_k] = v
+                
+            VistoriaSubModelFactory.update_sub_model(instance, tipo, normalized_source)
+
+        # Reload instance
+        instance.refresh_from_db()
+        new_serializer = self.get_serializer(instance)
+        new_data = new_serializer.data
+        
+        # Generate Diff and AuditLog
+        diff_json = self._generate_diff(old_data, new_data)
+        if diff_json:
+            from .models import AuditLog
+            AuditLog.objects.create(
+                user=request.user,
+                action='UPDATE',
+                entity_type='Vistoria',
+                entity_id=instance.id,
+                diff_json=diff_json
+            )
+
+        return Response(new_data)
+
+    def _generate_diff(self, old_data, new_data):
+        diff = {}
+        for key in new_data:
+            # Ignore auto fields
+            if key in ['synced_at', 'updated_at', 'created_at']:
+                continue
+                
+            if isinstance(new_data[key], dict) and isinstance(old_data.get(key, {}), dict):
+                nested_diff = {}
+                old_nested = old_data.get(key, {})
+                for n_key in new_data[key]:
+                    if new_data[key].get(n_key) != old_nested.get(n_key):
+                        nested_diff[n_key] = {'from': old_nested.get(n_key), 'to': new_data[key].get(n_key)}
+                if nested_diff:
+                    diff[key] = nested_diff
+            elif new_data.get(key) != old_data.get(key):
+                diff[key] = {'from': old_data.get(key), 'to': new_data.get(key)}
+        return diff
 
     @action(detail=False, methods=['get'], url_path='users/(?P<user_id>[^/.]+)')
     def by_user(self, request, user_id=None):

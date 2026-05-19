@@ -52,12 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     
-    // Fetch user info to check is_staff
+    // Fetch user info
     const userResponse = await api.get('/auth/me/');
-    if (!userResponse.data.is_staff) {
-      logout();
-      throw new Error('Acesso restrito a administradores.');
-    }
     
     setUser(userResponse.data);
     localStorage.setItem('user', JSON.stringify(userResponse.data));

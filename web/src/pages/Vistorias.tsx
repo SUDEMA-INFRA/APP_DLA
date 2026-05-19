@@ -186,6 +186,31 @@ const VistoriasPage: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedVistoria, setSelectedVistoria] = useState<VistoriaData | null>(null);
 
+  // Edit Dialog state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingVistoria, setEditingVistoria] = useState<VistoriaData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleOpenEdit = (vistoria: VistoriaData) => {
+    setEditingVistoria(JSON.parse(JSON.stringify(vistoria))); // deep copy
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingVistoria) return;
+    try {
+      setIsSaving(true);
+      await api.put(`/vistorias/${editingVistoria.local_id}/`, editingVistoria);
+      setIsEditOpen(false);
+      fetchData(); // refresh list
+    } catch (error) {
+      console.error("Erro ao salvar vistoria:", error);
+      alert("Erro ao salvar alterações. Verifique os dados e tente novamente.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -646,14 +671,26 @@ const VistoriasPage: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 hover:bg-slate-200 dark:hover:bg-slate-800"
-                            onClick={() => handleOpenDetails(v)}
-                          >
-                            <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 hover:bg-slate-200 dark:hover:bg-slate-800"
+                              onClick={() => handleOpenDetails(v)}
+                              title="Visualizar"
+                            >
+                              <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 hover:bg-slate-200 dark:hover:bg-slate-800"
+                              onClick={() => handleOpenEdit(v)}
+                              title="Editar"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-slate-600 dark:text-slate-400"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -1122,6 +1159,127 @@ const VistoriasPage: React.FC = () => {
                 <Button className="gap-2" onClick={() => window.print()}>
                   <Download className="w-4 h-4" />
                   Exportar PDF / Imprimir
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-[90vw] md:max-w-3xl max-h-[90vh] overflow-y-auto">
+          {editingVistoria && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Editar Vistoria</DialogTitle>
+                <DialogDescription>Edite as informações e dados coletados.</DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-sm font-semibold">Nº Processo</label>
+                    <Input 
+                      value={editingVistoria.data.processo_n || ''} 
+                      onChange={e => {
+                        let val = e.target.value.replace(/\D/g, '');
+                        if (val.length > 10) val = val.slice(0, 10);
+                        if (val.length > 4) val = val.slice(0, 4) + '-' + val.slice(4);
+                        setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, processo_n: val}});
+                      }}
+                      placeholder="0000-000000"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-semibold">Requerente</label>
+                    <Input 
+                      value={editingVistoria.data.requerente || ''} 
+                      onChange={e => setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, requerente: e.target.value}})} 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-semibold">Latitude</label>
+                    <Input 
+                      type="number"
+                      value={editingVistoria.data.latitude || ''} 
+                      onChange={e => setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, latitude: Number(e.target.value)}})} 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-semibold">Longitude</label>
+                    <Input 
+                      type="number"
+                      value={editingVistoria.data.longitude || ''} 
+                      onChange={e => setEditingVistoria({...editingVistoria, data: {...editingVistoria.data, longitude: Number(e.target.value)}})} 
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <h3 className="font-bold border-b pb-2 mb-4">Dados Específicos ({getVistoriaType(editingVistoria)})</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(() => {
+                      const type = getVistoriaType(editingVistoria).toLowerCase();
+                      const typeKey = type.includes('supressão') || type.includes('supressao') ? 'supressao' : type;
+                      const subData = (editingVistoria.data as any)[typeKey] || {};
+                      
+                      return Object.entries(subData).map(([key, value]) => {
+                        if (key === 'id' || key === 'vistoria') return null;
+                        
+                        const handleChange = (newVal: any) => {
+                          setEditingVistoria(prev => {
+                            if (!prev) return prev;
+                            return {
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                [typeKey]: {
+                                  ...((prev.data as any)[typeKey] || {}),
+                                  [key]: newVal
+                                }
+                              }
+                            };
+                          });
+                        };
+
+                        return (
+                          <div key={key} className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                              {key.replace(/_/g, ' ')}
+                            </label>
+                            {typeof value === 'boolean' || value === true || value === false ? (
+                              <select 
+                                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
+                                value={value ? "true" : "false"}
+                                onChange={e => handleChange(e.target.value === "true")}
+                              >
+                                <option value="true">Sim</option>
+                                <option value="false">Não</option>
+                              </select>
+                            ) : typeof value === 'number' ? (
+                              <Input 
+                                type="number"
+                                value={value}
+                                onChange={e => handleChange(Number(e.target.value))}
+                              />
+                            ) : (
+                              <Input 
+                                value={(value as string) || ''}
+                                onChange={e => handleChange(e.target.value)}
+                              />
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+                <Button onClick={handleSaveEdit} disabled={isSaving}>
+                  {isSaving ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               </DialogFooter>
             </>
