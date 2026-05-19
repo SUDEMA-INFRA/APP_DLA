@@ -353,6 +353,56 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
           _buildRow('Fase de Produção', s['fase_producao']?.toString() ?? 'Não informado'),
         ],
       );
+    } else if (tipo == 'Bovinocultura') {
+      final b = d['bovinocultura'] ?? d;
+      return _buildCard(
+        title: 'Especificações: Bovinocultura',
+        icon: Icons.grass_outlined,
+        iconColor: Colors.brown,
+        children: [
+          _buildRow('Modelo', b['modelo']?.toString() ?? 'Não informado'),
+          _buildRow('Área (Hectares)', b['area_ha']?.toString() ?? 'Não informado'),
+          _buildRow('Dessedentação', b['dessedentacao']?.toString() ?? 'Não informado'),
+        ],
+      );
+    } else if (tipo == 'Aquicultura') {
+      final aq = d['aquicultura'] ?? d;
+      return _buildCard(
+        title: 'Especificações: Aquicultura',
+        icon: Icons.water_outlined,
+        iconColor: Colors.cyan,
+        children: [
+          _buildRow('Quantidade de Tanques', aq['qtd_tanques']?.toString() ?? 'Não informado'),
+          _buildRow('Possui Hidrômetro?', aq['hidrometro'] == true ? 'Sim' : 'Não'),
+          _buildRow('Possui Outorga?', aq['outorga'] == true ? 'Sim' : 'Não'),
+          _buildRow('Fonte de Água', aq['fonte_agua']?.toString() ?? 'Não informado'),
+        ],
+      );
+    } else if (tipo == 'Sucroalcooleiro') {
+      final su = d['sucroalcooleiro'] ?? d;
+      return _buildCard(
+        title: 'Especificações: Sucroalcooleiro',
+        icon: Icons.factory_outlined,
+        iconColor: Colors.purple,
+        children: [
+          _buildRow('Resíduos Sólidos', su['residuos_solidos']?.toString() ?? 'Não informado'),
+          _buildRow('Destinação do Bagaço', su['bagaco']?.toString() ?? 'Não informado'),
+          _buildRow('Equipamentos Conformes?', su['equipamentos_conformes'] != false ? 'Sim' : 'Não'),
+          _buildRow('Armazenamento OK?', su['armazenamento_ok'] != false ? 'Sim' : 'Não'),
+        ],
+      );
+    } else if (tipo == 'Agricultura') {
+      final ag = d['agricultura'] ?? d;
+      return _buildCard(
+        title: 'Especificações: Agricultura',
+        icon: Icons.agriculture_outlined,
+        iconColor: Colors.lightGreen,
+        children: [
+          _buildRow('Cultivo', ag['cultivo']?.toString() ?? 'Não informado'),
+          _buildRow('Cursos Hídricos no Entorno', ag['cursos_hidricos_entorno']?.toString() ?? 'Não informado'),
+          _buildRow('Uso de Agrotóxicos', ag['agrotoxicos']?.toString() ?? 'Não informado'),
+        ],
+      );
     } else {
       return _buildCard(
         title: 'Licenciamento Simplificado',

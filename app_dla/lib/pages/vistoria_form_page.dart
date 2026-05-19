@@ -49,6 +49,28 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
   final _suinoculturaQtdAnimaisController = TextEditingController();
   String _suinoculturaFaseProducao = 'Terminação';
 
+  // Bovinocultura Controllers
+  String _bovinoculturaModelo = 'Extensivo';
+  final _bovinoculturaAreaController = TextEditingController();
+  final _bovinoculturaDessedentacaoController = TextEditingController();
+
+  // Aquicultura Controllers
+  final _aquiculturaQtdTanquesController = TextEditingController();
+  bool _aquiculturaHidrometro = false;
+  bool _aquiculturaOutorga = false;
+  final _aquiculturaFonteAguaController = TextEditingController();
+
+  // Sucroalcooleiro Controllers
+  final _sucroalcooleiroResiduosController = TextEditingController();
+  final _sucroalcooleiroBagacoController = TextEditingController();
+  bool _sucroalcooleiroEquipamentosConformes = true;
+  bool _sucroalcooleiroArmazenamentoOk = true;
+
+  // Agricultura Controllers
+  final _agriculturaCultivoController = TextEditingController();
+  final _agriculturaCursosHidricosController = TextEditingController();
+  final _agriculturaAgrotoxicosController = TextEditingController();
+
   bool _isGpsLoading = false;
 
   final List<String> _tipos = [
@@ -97,6 +119,28 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       _suinoculturaQtdGalpoesController.text = s['qtd_galpoes']?.toString() ?? '';
       _suinoculturaQtdAnimaisController.text = s['qtd_animais']?.toString() ?? '';
       _suinoculturaFaseProducao = s['fase_producao']?.toString() ?? 'Terminação';
+    } else if (_selectedTipo == 'Bovinocultura' || d.containsKey('bovinocultura')) {
+      final b = d['bovinocultura'] ?? d;
+      _bovinoculturaModelo = b['modelo']?.toString() ?? 'Extensivo';
+      _bovinoculturaAreaController.text = b['area_ha']?.toString() ?? '';
+      _bovinoculturaDessedentacaoController.text = b['dessedentacao']?.toString() ?? '';
+    } else if (_selectedTipo == 'Aquicultura' || d.containsKey('aquicultura')) {
+      final aq = d['aquicultura'] ?? d;
+      _aquiculturaQtdTanquesController.text = aq['qtd_tanques']?.toString() ?? '';
+      _aquiculturaHidrometro = aq['hidrometro'] == true;
+      _aquiculturaOutorga = aq['outorga'] == true;
+      _aquiculturaFonteAguaController.text = aq['fonte_agua']?.toString() ?? '';
+    } else if (_selectedTipo == 'Sucroalcooleiro' || d.containsKey('sucroalcooleiro')) {
+      final su = d['sucroalcooleiro'] ?? d;
+      _sucroalcooleiroResiduosController.text = su['residuos_solidos']?.toString() ?? '';
+      _sucroalcooleiroBagacoController.text = su['bagaco']?.toString() ?? '';
+      _sucroalcooleiroEquipamentosConformes = su['equipamentos_conformes'] != false;
+      _sucroalcooleiroArmazenamentoOk = su['armazenamento_ok'] != false;
+    } else if (_selectedTipo == 'Agricultura' || d.containsKey('agricultura')) {
+      final ag = d['agricultura'] ?? d;
+      _agriculturaCultivoController.text = ag['cultivo']?.toString() ?? '';
+      _agriculturaCursosHidricosController.text = ag['cursos_hidricos_entorno']?.toString() ?? '';
+      _agriculturaAgrotoxicosController.text = ag['agrotoxicos']?.toString() ?? '';
     }
   }
 
@@ -155,6 +199,32 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
         'qtd_animais': int.tryParse(_suinoculturaQtdAnimaisController.text),
         'fase_producao': _suinoculturaFaseProducao,
       };
+    } else if (_selectedTipo == 'Bovinocultura') {
+      payload['bovinocultura'] = {
+        'modelo': _bovinoculturaModelo,
+        'area_ha': double.tryParse(_bovinoculturaAreaController.text),
+        'dessedentacao': _bovinoculturaDessedentacaoController.text.trim(),
+      };
+    } else if (_selectedTipo == 'Aquicultura') {
+      payload['aquicultura'] = {
+        'qtd_tanques': int.tryParse(_aquiculturaQtdTanquesController.text),
+        'hidrometro': _aquiculturaHidrometro,
+        'outorga': _aquiculturaOutorga,
+        'fonte_agua': _aquiculturaFonteAguaController.text.trim(),
+      };
+    } else if (_selectedTipo == 'Sucroalcooleiro') {
+      payload['sucroalcooleiro'] = {
+        'residuos_solidos': _sucroalcooleiroResiduosController.text.trim(),
+        'bagaco': _sucroalcooleiroBagacoController.text.trim(),
+        'equipamentos_conformes': _sucroalcooleiroEquipamentosConformes,
+        'armazenamento_ok': _sucroalcooleiroArmazenamentoOk,
+      };
+    } else if (_selectedTipo == 'Agricultura') {
+      payload['agricultura'] = {
+        'cultivo': _agriculturaCultivoController.text.trim(),
+        'cursos_hidricos_entorno': _agriculturaCursosHidricosController.text.trim(),
+        'agrotoxicos': _agriculturaAgrotoxicosController.text.trim(),
+      };
     }
 
     return payload;
@@ -204,6 +274,21 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       }
       if (int.tryParse(_suinoculturaQtdGalpoesController.text) == null || int.tryParse(_suinoculturaQtdGalpoesController.text)! <= 0) {
         _showWarning('Quantidade de galpões deve ser maior que zero.');
+        return false;
+      }
+    } else if (_selectedTipo == 'Bovinocultura') {
+      if (double.tryParse(_bovinoculturaAreaController.text) == null || double.tryParse(_bovinoculturaAreaController.text)! <= 0) {
+        _showWarning('Área em hectares deve ser maior que zero.');
+        return false;
+      }
+    } else if (_selectedTipo == 'Aquicultura') {
+      if (int.tryParse(_aquiculturaQtdTanquesController.text) == null || int.tryParse(_aquiculturaQtdTanquesController.text)! <= 0) {
+        _showWarning('Quantidade de tanques deve ser maior que zero.');
+        return false;
+      }
+    } else if (_selectedTipo == 'Agricultura') {
+      if (_agriculturaCultivoController.text.trim().isEmpty) {
+        _showWarning('O campo "Tipo de Cultivo" é obrigatório.');
         return false;
       }
     }
@@ -603,7 +688,137 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
         ),
       ),
     );
-  } else {
+    } else if (_selectedTipo == 'Bovinocultura') {
+      return Card(
+        color: Colors.brown.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _bovinoculturaModelo,
+                decoration: const InputDecoration(labelText: 'Modelo', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+                items: ['Extensivo', 'Intensivo']
+                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                    .toList(),
+                onChanged: (val) => setState(() => _bovinoculturaModelo = val!),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _bovinoculturaAreaController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'Área (Hectares)', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _bovinoculturaDessedentacaoController,
+                decoration: const InputDecoration(labelText: 'Forma de Dessedentação', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (_selectedTipo == 'Aquicultura') {
+      return Card(
+        color: Colors.cyan.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _aquiculturaQtdTanquesController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Quantidade de Tanques', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                title: const Text('Possui Hidrômetro?', style: TextStyle(fontSize: 14)),
+                value: _aquiculturaHidrometro,
+                activeColor: const Color(0xFF006b33),
+                onChanged: (val) => setState(() => _aquiculturaHidrometro = val),
+              ),
+              SwitchListTile(
+                title: const Text('Possui Outorga?', style: TextStyle(fontSize: 14)),
+                value: _aquiculturaOutorga,
+                activeColor: const Color(0xFF006b33),
+                onChanged: (val) => setState(() => _aquiculturaOutorga = val),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _aquiculturaFonteAguaController,
+                decoration: const InputDecoration(labelText: 'Fonte de Captação de Água', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (_selectedTipo == 'Sucroalcooleiro') {
+      return Card(
+        color: Colors.purple.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _sucroalcooleiroResiduosController,
+                decoration: const InputDecoration(labelText: 'Destinação de Resíduos Sólidos', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _sucroalcooleiroBagacoController,
+                decoration: const InputDecoration(labelText: 'Destinação do Bagaço', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                title: const Text('Equipamentos estão conformes?', style: TextStyle(fontSize: 14)),
+                value: _sucroalcooleiroEquipamentosConformes,
+                activeColor: const Color(0xFF006b33),
+                onChanged: (val) => setState(() => _sucroalcooleiroEquipamentosConformes = val),
+              ),
+              SwitchListTile(
+                title: const Text('Armazenamento está OK?', style: TextStyle(fontSize: 14)),
+                value: _sucroalcooleiroArmazenamentoOk,
+                activeColor: const Color(0xFF006b33),
+                onChanged: (val) => setState(() => _sucroalcooleiroArmazenamentoOk = val),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (_selectedTipo == 'Agricultura') {
+      return Card(
+        color: Colors.lightGreen.shade50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _agriculturaCultivoController,
+                decoration: const InputDecoration(labelText: 'Tipo de Cultivo (Ex: Milho, Soja)', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _agriculturaCursosHidricosController,
+                decoration: const InputDecoration(labelText: 'Cursos Hídricos no Entorno', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _agriculturaAgrotoxicosController,
+                decoration: const InputDecoration(labelText: 'Uso de Agrotóxicos (Detalhar)', border: OutlineInputBorder(), fillColor: Colors.white, filled: true),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -631,6 +846,15 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
     _aviculturaQtdGalpoesController.dispose();
     _suinoculturaQtdGalpoesController.dispose();
     _suinoculturaQtdAnimaisController.dispose();
+    _bovinoculturaAreaController.dispose();
+    _bovinoculturaDessedentacaoController.dispose();
+    _aquiculturaQtdTanquesController.dispose();
+    _aquiculturaFonteAguaController.dispose();
+    _sucroalcooleiroResiduosController.dispose();
+    _sucroalcooleiroBagacoController.dispose();
+    _agriculturaCultivoController.dispose();
+    _agriculturaCursosHidricosController.dispose();
+    _agriculturaAgrotoxicosController.dispose();
     super.dispose();
   }
 

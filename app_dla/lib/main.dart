@@ -8,6 +8,7 @@ import 'package:app_dla/pages/vistoria_form_page.dart';
 import 'package:app_dla/pages/vistoria_detail_page.dart';
 import 'package:app_dla/services/database_helper.dart';
 import 'package:app_dla/services/vistoria_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() async {
@@ -62,6 +63,7 @@ class _AuthCheckState extends State<AuthCheck> {
   }
 
   void _initConnectivityListener() {
+    if (kIsWeb) return; // Na web o listener de conectividade falha
     Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
       if (results.any((r) => r != ConnectivityResult.none)) {
         debugPrint("Internet detectada! Sincronizando...");
@@ -133,18 +135,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _checkConnectivity() async {
-    final results = await Connectivity().checkConnectivity();
-    setState(() {
-      _isOnline = results.any((r) => r != ConnectivityResult.none);
-    });
+    if (kIsWeb) {
+      setState(() => _isOnline = true); // Web é assumido online pois roda no navegador
+      return;
+    }
+    
+    try {
+      final results = await Connectivity().checkConnectivity();
+      setState(() {
+        _isOnline = results.any((r) => r != ConnectivityResult.none);
+      });
 
-    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-      if (mounted) {
-        setState(() {
-          _isOnline = results.any((r) => r != ConnectivityResult.none);
-        });
-      }
-    });
+      Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+        if (mounted) {
+          setState(() {
+            _isOnline = results.any((r) => r != ConnectivityResult.none);
+          });
+        }
+      });
+    } catch (e) {
+      setState(() => _isOnline = true); // Fallback caso dê erro de plataforma
+    }
   }
 
   Future<void> _loadData() async {
