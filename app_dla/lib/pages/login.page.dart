@@ -61,9 +61,11 @@ class _LoginPageState extends State<LoginPage> {
         }
       } catch (e) {
         if (mounted) {
-          String errorMsg = 'Erro de conexão: Verifique sua internet';
-          if (e.toString().contains('SocketException') || e.toString().contains('Connection failed')) {
-            errorMsg = 'Você está sem internet. Tente o "Entrar Offline".';
+          String errorMsg = 'Erro de conexão: Verifique sua internet ou a URL da API\n\nDetalhes: ${e.toString()}';
+          if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
+            errorMsg = 'Você está sem internet. Tente o "Entrar Offline".\n\nDetalhes: ${e.toString()}';
+          } else if (e.toString().contains('Connection failed') || e.toString().contains('XMLHttpRequest')) {
+            errorMsg = 'Servidor inacessível. Tente o "Entrar Offline" ou verifique sua conexão local.\n\nDetalhes: ${e.toString()}';
           }
           
           ScaffoldMessenger.of(context).showSnackBar(

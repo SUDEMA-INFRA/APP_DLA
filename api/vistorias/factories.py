@@ -32,9 +32,15 @@ class VistoriaSubModelFactory:
         if not model_class:
             return None
 
-        # Filter the payload_data keys to only include fields that belong to the target sub-model
+        # Extract nested data if it exists under the tipo name (e.g. 'bovinocultura')
+        tipo_key = str(tipo).lower().strip()
+        data_to_extract = payload_data.get(tipo_key, payload_data)
+        if not isinstance(data_to_extract, dict):
+            data_to_extract = payload_data
+
+        # Filter the data to only include fields that belong to the target sub-model
         sub_model_fields = {}
-        for key, value in payload_data.items():
+        for key, value in data_to_extract.items():
             # Exclude id and vistoria primary relations
             if hasattr(model_class, key) and key not in ['id', 'vistoria']:
                 sub_model_fields[key] = value
