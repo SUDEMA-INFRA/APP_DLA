@@ -8,13 +8,18 @@ import 'package:app_dla/pages/vistoria_form_page.dart';
 import 'package:app_dla/pages/vistoria_detail_page.dart';
 import 'package:app_dla/services/database_helper.dart';
 import 'package:app_dla/services/vistoria_service.dart';
+import 'package:app_dla/services/print_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Carrega as variáveis o .env
-  await dotenv.load(fileName: ".env");
+  // Carrega as variáveis do .env com tratamento de erro para evitar tela branca
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Erro ao carregar .env: $e");
+  }
   runApp(const MyApp());
 }
 
@@ -234,6 +239,35 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _printUnsynced(List<Vistoria> list) async {
+    if (list.isEmpty) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Conectando à impressora térmica...'), duration: Duration(seconds: 1)),
+    );
+
+    final printService = PrintService.instance;
+    final int printed = await printService.printMultipleVistorias(list);
+
+    if (mounted) {
+      if (printed > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$printed vistorias impressas com sucesso! 🖨️'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao imprimir. Verifique se a impressora está ativa.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const primaryGreen = Color(0xFF006b33);
@@ -298,6 +332,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final drafts = _vistorias.where((v) => (v.data['status'] ?? 'rascunho').toString() == 'rascunho').length;
     final pending = _vistorias.where((v) => (v.data['status'] ?? 'rascunho').toString() != 'rascunho' && !v.synced).length;
     final synced = _vistorias.where((v) => v.synced).length;
+    final unsyncedList = _vistorias.where((v) => !v.synced).toList();
 
     return RefreshIndicator(
       onRefresh: _refreshVistorias,
@@ -382,6 +417,29 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           const SizedBox(height: 24),
+
+          if (unsyncedList.isNotEmpty) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _printUnsynced(unsyncedList),
+                icon: const Icon(Icons.print, color: Colors.white),
+                label: Text(
+                  'Imprimir Não Sincronizadas (${unsyncedList.length})',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF006b33),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Card de Ajuda
           Container(
