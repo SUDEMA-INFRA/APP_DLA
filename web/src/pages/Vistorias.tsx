@@ -70,6 +70,13 @@ const VistoriasPage: React.FC = () => {
         (v.data?.status || 'sincronizada').toLowerCase() === 'sincronizada'
       );
       
+      // Sort vistorias from newest to oldest (by created_at)
+      syncedVistorias.sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeB - timeA;
+      });
+      
       setVistorias(syncedVistorias);
       setUsers(usersList);
     } catch (error) {

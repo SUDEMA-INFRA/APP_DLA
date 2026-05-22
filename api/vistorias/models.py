@@ -250,9 +250,9 @@ class VistoriaAquicultura(models.Model):
     medida_sugerida = models.TextField(null=True, blank=True)
     observacoes = models.TextField(null=True, blank=True)
 
-class VistoriaSucroalcooleiro(models.Model):
+class VistoriaAgroindustrial(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False, db_index=True)
-    vistoria = models.OneToOneField(Vistoria, on_delete=models.CASCADE, related_name='sucroalcooleiro')
+    vistoria = models.OneToOneField(Vistoria, on_delete=models.CASCADE, related_name='agroindustrial')
     
     # 21 technical items for Atividades Agroindustriais
     local_materia_prima = models.TextField(null=True, blank=True)

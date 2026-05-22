@@ -4,6 +4,7 @@ import 'vistoria_form_page.dart';
 import '../utils/municipios.dart';
 import '../services/print_service.dart';
 import '../widgets/print_preview_dialog.dart';
+import '../services/database_helper.dart';
 
 class VistoriaDetailPage extends StatefulWidget {
   final Vistoria vistoria;
@@ -35,8 +36,28 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
   }
 
   Future<void> _printComprovante(BuildContext context) async {
+    String? technicianName;
+    try {
+      final db = await DatabaseHelper.instance.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'users_local',
+        where: 'id = ?',
+        whereArgs: [_currentVistoria.userId],
+        limit: 1,
+      );
+      if (maps.isNotEmpty) {
+        technicianName = maps.first['nome']?.toString();
+      }
+    } catch (e) {
+      debugPrint("Erro ao buscar técnico: $e");
+    }
+
     // Abre a pré-visualização e espera confirmação
-    final shouldPrint = await PrintPreviewDialog.show(context, _currentVistoria);
+    final shouldPrint = await PrintPreviewDialog.show(
+      context,
+      _currentVistoria,
+      technicianName: technicianName,
+    );
 
     if (shouldPrint != true || !mounted) return;
 
@@ -47,7 +68,10 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
       ),
     );
 
-    final success = await PrintService.instance.printVistoria(_currentVistoria);
+    final success = await PrintService.instance.printVistoria(
+      _currentVistoria,
+      technicianName: technicianName,
+    );
 
     if (mounted) {
       if (success) {
@@ -1107,8 +1131,8 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
           ),
         ],
       );
-    } else if (tipo == 'Sucroalcooleiro' || tipo == 'Atividades Agroindustriais') {
-      final su = d['sucroalcooleiro'] ?? d;
+    } else if (tipo == 'Sucroalcooleiro' || tipo == 'Atividades Agroindustriais' || tipo == 'Agroindustrial') {
+      final su = d['agroindustrial'] ?? d['sucroalcooleiro'] ?? d;
       return _buildCard(
         title: 'Especificações: Atividades Agroindustriais',
         icon: Icons.factory_outlined,

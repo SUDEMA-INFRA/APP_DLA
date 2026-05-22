@@ -1253,9 +1253,9 @@ const VistoriaDetailsDialog: React.FC<VistoriaDetailsDialogProps> = React.memo((
                   );
                 })()}
 
-                {/* SUCROALCOOLEIRO UI */}
-                {selectedVistoria.data.sucroalcooleiro && (() => {
-                  const suc = selectedVistoria.data.sucroalcooleiro;
+                {/* AGROINDUSTRIAL UI */}
+                {(selectedVistoria.data.agroindustrial || selectedVistoria.data.sucroalcooleiro) && (() => {
+                  const suc = selectedVistoria.data.agroindustrial || selectedVistoria.data.sucroalcooleiro;
                   const eflOk = suc.produz_efluentes;
                   const resOk = suc.produz_residuos;
                   const bagOk = suc.gera_utiliza_bagaco;
@@ -1584,6 +1584,7 @@ const VistoriaDetailsDialog: React.FC<VistoriaDetailsDialogProps> = React.memo((
                  !selectedVistoria.data.suinocultura && 
                  !selectedVistoria.data.bovinocultura && 
                  !selectedVistoria.data.aquicultura && 
+                 !selectedVistoria.data.agroindustrial && 
                  !selectedVistoria.data.sucroalcooleiro && 
                  !selectedVistoria.data.agricultura && (
                   <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 text-center border border-dashed text-slate-500 space-y-2">

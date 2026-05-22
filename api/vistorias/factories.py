@@ -1,6 +1,6 @@
 from .models import (
     Vistoria, VistoriaSupressao, VistoriaAvicultura, VistoriaSuinocultura,
-    VistoriaBovinocultura, VistoriaAquicultura, VistoriaSucroalcooleiro,
+    VistoriaBovinocultura, VistoriaAquicultura, VistoriaAgroindustrial,
     VistoriaAgricultura
 )
 
@@ -15,7 +15,10 @@ class VistoriaSubModelFactory:
         'suinocultura': VistoriaSuinocultura,
         'bovinocultura': VistoriaBovinocultura,
         'aquicultura': VistoriaAquicultura,
-        'sucroalcooleiro': VistoriaSucroalcooleiro,
+        'sucroalcooleiro': VistoriaAgroindustrial,
+        'agroindustrial': VistoriaAgroindustrial,
+        'atividades agroindustriais': VistoriaAgroindustrial,
+        'agroindustriais': VistoriaAgroindustrial,
         'agricultura': VistoriaAgricultura,
     }
 
@@ -29,7 +32,10 @@ class VistoriaSubModelFactory:
         'suinocultura': 'suinocultura',
         'bovinocultura': 'bovinocultura',
         'aquicultura': 'aquicultura',
-        'sucroalcooleiro': 'sucroalcooleiro',
+        'sucroalcooleiro': 'agroindustrial',
+        'agroindustrial': 'agroindustrial',
+        'atividades agroindustriais': 'agroindustrial',
+        'agroindustriais': 'agroindustrial',
         'agricultura': 'agricultura',
     }
 
@@ -52,9 +58,17 @@ class VistoriaSubModelFactory:
         # Extract nested data if it exists under the normalized payload key
         tipo_normalized = str(tipo).lower().strip()
         payload_key = cls._PAYLOAD_KEYS.get(tipo_normalized, tipo_normalized)
-        data_to_extract = payload_data.get(payload_key, payload_data)
+        data_to_extract = payload_data.get(payload_key)
         if not isinstance(data_to_extract, dict):
-            data_to_extract = payload_data
+            # Try other potential keys for sucroalcooleiro/agroindustrial to be extremely resilient
+            if payload_key == 'agroindustrial':
+                for alt_key in ['agroindustrial', 'sucroalcooleiro', 'atividades agroindustriais', 'agroindustriais']:
+                    alt_data = payload_data.get(alt_key)
+                    if isinstance(alt_data, dict):
+                        data_to_extract = alt_data
+                        break
+            if not isinstance(data_to_extract, dict):
+                data_to_extract = payload_data
 
         # Filter the data to only include fields that belong to the target sub-model
         sub_model_fields = {}
@@ -80,9 +94,17 @@ class VistoriaSubModelFactory:
         # Extract nested data if it exists under the normalized payload key
         tipo_normalized = str(tipo).lower().strip()
         payload_key = cls._PAYLOAD_KEYS.get(tipo_normalized, tipo_normalized)
-        data_to_extract = payload_data.get(payload_key, payload_data)
+        data_to_extract = payload_data.get(payload_key)
         if not isinstance(data_to_extract, dict):
-            data_to_extract = payload_data
+            # Try other potential keys for sucroalcooleiro/agroindustrial to be extremely resilient
+            if payload_key == 'agroindustrial':
+                for alt_key in ['agroindustrial', 'sucroalcooleiro', 'atividades agroindustriais', 'agroindustriais']:
+                    alt_data = payload_data.get(alt_key)
+                    if isinstance(alt_data, dict):
+                        data_to_extract = alt_data
+                        break
+            if not isinstance(data_to_extract, dict):
+                data_to_extract = payload_data
 
         # Try to fetch the existing sub-model
         sub_model_instance = model_class.objects.filter(vistoria=vistoria).first()

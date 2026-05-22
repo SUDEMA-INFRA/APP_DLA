@@ -138,7 +138,10 @@ const VistoriaEditDialog: React.FC<VistoriaEditDialogProps> = React.memo(({
             <div className="space-y-4">
               {(() => {
                 const type = getVistoriaType(editingVistoria).toLowerCase();
-                const typeKey = type.includes('supressão') || type.includes('supressao') ? 'supressao' : type;
+                let typeKey = type.includes('supressão') || type.includes('supressao') ? 'supressao' : type;
+                if (typeKey.includes('sucroalcooleiro') || typeKey.includes('agroindustrial') || typeKey.includes('agroindustriais')) {
+                  typeKey = 'agroindustrial';
+                }
                 const subData = (editingVistoria.data as any)[typeKey] || {};
 
                 const renderEditSelect = (
@@ -1580,12 +1583,12 @@ const VistoriaEditDialog: React.FC<VistoriaEditDialogProps> = React.memo(({
                       </div>
                     </div>
                   );
-                } else if (typeKey === 'sucroalcooleiro') {
+                } else if (typeKey === 'agroindustrial' || typeKey === 'sucroalcooleiro') {
                   const suc = subData || {};
                   const updateField = (field: string, val: any) => {
                     setEditingVistoria(prev => {
                       if (!prev) return prev;
-                      const currentSuc = (prev.data as any).sucroalcooleiro || {};
+                      const currentSuc = (prev.data as any).agroindustrial || (prev.data as any).sucroalcooleiro || {};
                       const updatedSuc = {
                         ...currentSuc,
                         [field]: val
@@ -1618,6 +1621,7 @@ const VistoriaEditDialog: React.FC<VistoriaEditDialogProps> = React.memo(({
                         ...prev,
                         data: {
                           ...prev.data,
+                          agroindustrial: updatedSuc,
                           sucroalcooleiro: updatedSuc
                         }
                       };

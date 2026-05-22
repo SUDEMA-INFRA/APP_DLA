@@ -100,7 +100,7 @@ class PrintService {
   }
 
   // Monta a estrutura de linhas do recibo (usada tanto no app quanto na impressora)
-  List<ReceiptLine> buildReceiptLines(Vistoria vistoria) {
+  List<ReceiptLine> buildReceiptLines(Vistoria vistoria, {String? technicianName}) {
     final List<ReceiptLine> lines = [];
     const int cols = 42;
     final String separator = '-' * cols;
@@ -132,6 +132,9 @@ class PrintService {
 
     addLine('Processo: ${data['processo_n'] ?? 'N/A'}', bold: true);
     addLine('Requerente: ${data['requerente'] ?? 'N/A'}');
+    if (technicianName != null && technicianName.isNotEmpty) {
+      addLine('Tecnico: $technicianName');
+    }
     addLine('Tipo: ${data['tipo'] ?? 'N/A'}');
     addLine('Data: $dateStr');
     addLine('Lat: ${data['latitude'] ?? 'N/A'}');
@@ -385,8 +388,8 @@ class PrintService {
       addLine('Foto Geo OK: ${aq['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
       addLine('Parecer: ${aq['observacoes'] ?? 'Sem parecer'}');
 
-    } else if (tipo.contains('sucroalcooleiro') || tipo.contains('agroindustriais') || tipo.contains('agroindustrial') || data.containsKey('sucroalcooleiro')) {
-      final su = data['sucroalcooleiro'] ?? data;
+    } else if (tipo.contains('sucroalcooleiro') || tipo.contains('agroindustriais') || tipo.contains('agroindustrial') || data.containsKey('agroindustrial') || data.containsKey('sucroalcooleiro')) {
+      final su = data['agroindustrial'] ?? data['sucroalcooleiro'] ?? data;
       
       addLine(separator, align: PosAlign.center);
       addLine('ATIVIDADES AGROINDUSTRIAIS', bold: true, align: PosAlign.center);
@@ -502,7 +505,7 @@ class PrintService {
   }
 
   // Gera os bytes ESC/POS brutos a partir das ReceiptLine
-  List<int> buildReceiptBytes(Vistoria vistoria) {
+  List<int> buildReceiptBytes(Vistoria vistoria, {String? technicianName}) {
     List<int> bytes = [];
 
     // Inicialização da impressora (Zera configurações anteriores)
@@ -510,7 +513,7 @@ class PrintService {
     // Configura a impressora para usar a Fonte B (Fonte compacta/tamanho menor 9x17)
     bytes += [27, 77, 1]; // ESC M 1
 
-    final lines = buildReceiptLines(vistoria);
+    final lines = buildReceiptLines(vistoria, technicianName: technicianName);
 
     for (var line in lines) {
       // 1. Alinhamento
@@ -558,7 +561,7 @@ class PrintService {
   }
 
   // Imprime uma vistoria formatada
-  Future<bool> printVistoria(Vistoria vistoria) async {
+  Future<bool> printVistoria(Vistoria vistoria, {String? technicianName}) async {
     try {
       // Garante que está conectado
       bool connected = await autoConnect();
@@ -567,7 +570,7 @@ class PrintService {
         return false;
       }
 
-      final bytes = buildReceiptBytes(vistoria);
+      final bytes = buildReceiptBytes(vistoria, technicianName: technicianName);
 
       // Envia os bytes brutos para a impressora
       final bool success = await PrintBluetoothThermal.writeBytes(bytes);

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     Vistoria, Municipio, VistoriaSupressao, VistoriaAvicultura,
     VistoriaSuinocultura, VistoriaBovinocultura, VistoriaAquicultura,
-    VistoriaSucroalcooleiro, VistoriaAgricultura, Foto, AuditLog
+    VistoriaAgroindustrial, VistoriaAgricultura, Foto, AuditLog
 )
 
 class MunicipioSerializer(serializers.ModelSerializer):
@@ -35,9 +35,9 @@ class VistoriaAquiculturaSerializer(serializers.ModelSerializer):
         model = VistoriaAquicultura
         fields = '__all__'
 
-class VistoriaSucroalcooleiroSerializer(serializers.ModelSerializer):
+class VistoriaAgroindustrialSerializer(serializers.ModelSerializer):
     class Meta:
-        model = VistoriaSucroalcooleiro
+        model = VistoriaAgroindustrial
         fields = '__all__'
 
 class VistoriaAgriculturaSerializer(serializers.ModelSerializer):
@@ -86,8 +86,8 @@ class VistoriaListSerializer(serializers.ModelSerializer):
             tipo = 'Bovinocultura'
         elif hasattr(instance, 'aquicultura') and instance.aquicultura:
             tipo = 'Aquicultura'
-        elif hasattr(instance, 'sucroalcooleiro') and instance.sucroalcooleiro:
-            tipo = 'Sucroalcooleiro'
+        elif hasattr(instance, 'agroindustrial') and instance.agroindustrial:
+            tipo = 'Atividades Agroindustriais'
         elif hasattr(instance, 'agricultura') and instance.agricultura:
             tipo = 'Agricultura'
         data_dict['tipo'] = tipo
@@ -108,7 +108,8 @@ class VistoriaSerializer(serializers.ModelSerializer):
     suinocultura = VistoriaSuinoculturaSerializer(read_only=True)
     bovinocultura = VistoriaBovinoculturaSerializer(read_only=True)
     aquicultura = VistoriaAquiculturaSerializer(read_only=True)
-    sucroalcooleiro = VistoriaSucroalcooleiroSerializer(read_only=True)
+    agroindustrial = VistoriaAgroindustrialSerializer(read_only=True)
+    sucroalcooleiro = VistoriaAgroindustrialSerializer(read_only=True)
     agricultura = VistoriaAgriculturaSerializer(read_only=True)
     fotos = FotoSerializer(many=True, read_only=True)
 
@@ -186,10 +187,30 @@ class VistoriaSerializer(serializers.ModelSerializer):
             data_dict['bovinocultura'] = VistoriaBovinoculturaSerializer(instance.bovinocultura).data
         if hasattr(instance, 'aquicultura') and instance.aquicultura:
             data_dict['aquicultura'] = VistoriaAquiculturaSerializer(instance.aquicultura).data
-        if hasattr(instance, 'sucroalcooleiro') and instance.sucroalcooleiro:
-            data_dict['sucroalcooleiro'] = VistoriaSucroalcooleiroSerializer(instance.sucroalcooleiro).data
+        if hasattr(instance, 'agroindustrial') and instance.agroindustrial:
+            serialized_agro = VistoriaAgroindustrialSerializer(instance.agroindustrial).data
+            data_dict['agroindustrial'] = serialized_agro
+            data_dict['sucroalcooleiro'] = serialized_agro
         if hasattr(instance, 'agricultura') and instance.agricultura:
             data_dict['agricultura'] = VistoriaAgriculturaSerializer(instance.agricultura).data
+
+        # Lightweight check to determine the type without loading the nested submodels' full schemas
+        tipo = 'Geral'
+        if hasattr(instance, 'supressao') and instance.supressao:
+            tipo = 'Supressão Vegetal'
+        elif hasattr(instance, 'avicultura') and instance.avicultura:
+            tipo = 'Avicultura'
+        elif hasattr(instance, 'suinocultura') and instance.suinocultura:
+            tipo = 'Suinocultura'
+        elif hasattr(instance, 'bovinocultura') and instance.bovinocultura:
+            tipo = 'Bovinocultura'
+        elif hasattr(instance, 'aquicultura') and instance.aquicultura:
+            tipo = 'Aquicultura'
+        elif hasattr(instance, 'agroindustrial') and instance.agroindustrial:
+            tipo = 'Atividades Agroindustriais'
+        elif hasattr(instance, 'agricultura') and instance.agricultura:
+            tipo = 'Agricultura'
+        data_dict['tipo'] = tipo
 
         return {
             'local_id': str(instance.id),

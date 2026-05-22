@@ -30,7 +30,7 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
     let suinocultura = 0;
     let bovinocultura = 0;
     let aquicultura = 0;
-    let sucroalcooleiro = 0;
+    let agroindustrial = 0;
     let agricultura = 0;
 
     vistorias.forEach(v => {
@@ -40,7 +40,7 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
       else if (type.includes('suinocultura')) suinocultura++;
       else if (type.includes('bovinocultura')) bovinocultura++;
       else if (type.includes('aquicultura')) aquicultura++;
-      else if (type.includes('sucroalcooleiro') || type.includes('agroindustriais') || type.includes('agroindustrial')) sucroalcooleiro++;
+      else if (type.includes('sucroalcooleiro') || type.includes('agroindustriais') || type.includes('agroindustrial')) agroindustrial++;
       else if (type.includes('agricultura')) agricultura++;
     });
 
@@ -51,7 +51,7 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
       suinocultura,
       bovinocultura,
       aquicultura,
-      sucroalcooleiro,
+      agroindustrial,
       agricultura
     };
   }, [vistorias]);
@@ -147,7 +147,7 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
         <div>
           <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400">Agroindústria</CardDescription>
           <CardTitle className="text-xl font-black text-purple-700 dark:text-purple-400 mt-1">
-            {loading ? <Skeleton className="h-7 w-12" /> : stats.sucroalcooleiro}
+            {loading ? <Skeleton className="h-7 w-12" /> : stats.agroindustrial}
           </CardTitle>
         </div>
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">

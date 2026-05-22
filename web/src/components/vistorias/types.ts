@@ -196,7 +196,7 @@ export interface VistoriaData {
       medida_sugerida?: string;
       observacoes?: string;
     };
-    sucroalcooleiro?: {
+    agroindustrial?: {
       local_materia_prima?: string;
       produz_efluentes?: boolean;
       efluentes_coleta_destinacao?: string;
@@ -239,6 +239,7 @@ export interface VistoriaData {
       armazenamento_ok?: boolean;
       observacoes?: string;
     };
+    sucroalcooleiro?: any;
     agricultura?: {
       atividade_agricola?: string;
       atividade_irrigada?: boolean;
@@ -268,7 +269,7 @@ export interface VistoriaData {
 // Helper to determine the actual type of a vistoria
 export const getVistoriaType = (v: VistoriaData) => {
   if (v.data.tipo) {
-    if (v.data.tipo === 'Sucroalcooleiro') return 'Atividades Agroindustriais';
+    if (v.data.tipo === 'Sucroalcooleiro' || v.data.tipo === 'Agroindustrial') return 'Atividades Agroindustriais';
     return v.data.tipo;
   }
   if (v.data.supressao) return 'Supressão Vegetal';
@@ -276,7 +277,7 @@ export const getVistoriaType = (v: VistoriaData) => {
   if (v.data.suinocultura) return 'Suinocultura';
   if (v.data.bovinocultura) return 'Bovinocultura';
   if (v.data.aquicultura) return 'Aquicultura';
-  if (v.data.sucroalcooleiro) return 'Atividades Agroindustriais';
+  if (v.data.agroindustrial || v.data.sucroalcooleiro) return 'Atividades Agroindustriais';
   if (v.data.agricultura) return 'Agricultura';
   return 'Geral';
 };

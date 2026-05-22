@@ -505,8 +505,8 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       _aquiculturaMedidaAuto = sugeridas.contains('Auto de Infração');
       
       _aquiculturaObservacoesController.text = aq['observacoes']?.toString() ?? '';
-    } else if (_selectedTipo == 'Atividades Agroindustriais' || d.containsKey('sucroalcooleiro')) {
-      final su = d['sucroalcooleiro'] ?? d;
+    } else if (_selectedTipo == 'Atividades Agroindustriais' || d.containsKey('agroindustrial') || d.containsKey('sucroalcooleiro')) {
+      final su = d['agroindustrial'] ?? d['sucroalcooleiro'] ?? d;
       _atividadesAgroindustriaisData = Map<String, dynamic>.from(su);
       _atividadesAgroindustriaisResiduosController.text = su['residuos_solidos']?.toString() ?? '';
       _atividadesAgroindustriaisBagacoController.text = su['bagaco']?.toString() ?? '';
@@ -775,13 +775,15 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
         'observacoes': _aquiculturaObservacoesController.text.trim(),
       };
     } else if (_selectedTipo == 'Atividades Agroindustriais') {
-      payload['sucroalcooleiro'] = {
+      final dataMap = {
         ..._atividadesAgroindustriaisData,
         'residuos_solidos': _atividadesAgroindustriaisResiduosController.text.trim(),
         'bagaco': _atividadesAgroindustriaisBagacoController.text.trim(),
         'equipamentos_conformes': _atividadesAgroindustriaisEquipamentosConformes,
         'armazenamento_ok': _atividadesAgroindustriaisArmazenamentoOk,
       };
+      payload['agroindustrial'] = dataMap;
+      payload['sucroalcooleiro'] = dataMap;
     } else if (_selectedTipo == 'Agricultura') {
       payload['agricultura'] = {
         ..._agriculturaData,

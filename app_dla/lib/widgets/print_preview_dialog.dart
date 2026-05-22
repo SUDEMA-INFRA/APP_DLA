@@ -15,15 +15,16 @@ import '../services/print_service.dart';
 /// nos mesmos pontos que a impressora faria.
 class PrintPreviewDialog extends StatelessWidget {
   final Vistoria vistoria;
+  final String? technicianName;
 
-  const PrintPreviewDialog({super.key, required this.vistoria});
+  const PrintPreviewDialog({super.key, required this.vistoria, this.technicianName});
 
-  static Future<bool?> show(BuildContext context, Vistoria vistoria) {
+  static Future<bool?> show(BuildContext context, Vistoria vistoria, {String? technicianName}) {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PrintPreviewDialog(vistoria: vistoria),
+      builder: (_) => PrintPreviewDialog(vistoria: vistoria, technicianName: technicianName),
     );
   }
 
@@ -49,7 +50,7 @@ class PrintPreviewDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final printService = PrintService.instance;
-    final lines = printService.buildReceiptLines(vistoria);
+    final lines = printService.buildReceiptLines(vistoria, technicianName: technicianName);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,

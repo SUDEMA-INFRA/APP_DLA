@@ -22,7 +22,7 @@ class VistoriaViewSet(viewsets.ModelViewSet):
         queryset = Vistoria.objects.select_related(
             'municipio', 'user', 'supressao', 'avicultura',
             'suinocultura', 'bovinocultura', 'aquicultura',
-            'sucroalcooleiro', 'agricultura'
+            'agroindustrial', 'agricultura'
         )
         if self.request.user.is_staff:
             return queryset.all()
