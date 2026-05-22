@@ -32,7 +32,7 @@ class Vistoria {
       'user_id': userId,
       'data': jsonEncode(data),
       'synced': synced ? 1 : 0,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
     };
   }
 
@@ -43,7 +43,7 @@ class Vistoria {
       userId: map['user_id'],
       data: jsonDecode(map['data']),
       synced: map['synced'] == 1,
-      createdAt: DateTime.parse(map['created_at']),
+      createdAt: DateTime.parse(map['created_at']).toLocal(),
     );
   }
 }
@@ -166,9 +166,24 @@ class VistoriaService {
     } else if (tipo.contains('avicultura') || data.containsKey('avicultura')) {
       final a = data['avicultura'] ?? data;
       if (a['modelo'] == null || a['modelo'].toString().trim().isEmpty) return false;
-      if (a['tipo_criacao'] == null || a['tipo_criacao'].toString().trim().isEmpty) return false;
-      if (a['qtd_animais'] == null || a['qtd_animais'] == 0) return false;
-      if (a['qtd_galpoes'] == null || a['qtd_galpoes'] == 0) return false;
+      
+      final modelo = a['modelo'].toString().toUpperCase();
+      if (modelo == 'CORTE') {
+        if (a['corte_comprimento'] == null || a['corte_comprimento'] == 0) return false;
+        if (a['corte_largura'] == null || a['corte_largura'] == 0) return false;
+        if (a['corte_densidade'] == null || a['corte_densidade'].toString().trim().isEmpty) return false;
+        if (a['corte_cama_destinacao'] == null || a['corte_cama_destinacao'].toString().trim().isEmpty) return false;
+      } else if (modelo == 'POSTURA') {
+        if (a['postura_fileiras'] == null || a['postura_fileiras'] == 0) return false;
+        if (a['postura_andares'] == null || a['postura_andares'] == 0) return false;
+        if (a['postura_gaiolas_modulo'] == null || a['postura_gaiolas_modulo'] == 0) return false;
+        if (a['postura_aves_gaiola'] == null || a['postura_aves_gaiola'] == 0) return false;
+      } else {
+        if (a['tipo_criacao'] == null || a['tipo_criacao'].toString().trim().isEmpty) return false;
+        if (a['qtd_animais'] == null || a['qtd_animais'] == 0) return false;
+      }
+      
+      if (a['observacoes'] == null || a['observacoes'].toString().trim().isEmpty) return false;
     } else if (tipo.contains('suinocultura') || data.containsKey('suinocultura')) {
       final s = data['suinocultura'] ?? data;
       if (s['qtd_galpoes'] == null || s['qtd_galpoes'] == 0) return false;
@@ -206,7 +221,7 @@ class VistoriaService {
         'local_id': v.localId,
         'device': deviceName,
         'data': v.data,
-        'created_at': v.createdAt.toIso8601String(),
+        'created_at': v.createdAt.toUtc().toIso8601String(),
       }),
     ).timeout(const Duration(seconds: 10));
   }

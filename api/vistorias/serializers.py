@@ -55,6 +55,52 @@ class AuditLogSerializer(serializers.ModelSerializer):
         model = AuditLog
         fields = '__all__'
 
+class VistoriaListSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    id = serializers.UUIDField(required=False)
+
+    class Meta:
+        model = Vistoria
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        data_dict = {}
+        for key in ['processo_n', 'requerente', 'latitude', 'longitude', 'status', 'dispositivo']:
+            data_dict[key] = ret.get(key)
+        
+        data_dict['municipio'] = ret.get('municipio')
+        if instance.municipio:
+            data_dict['municipio_nome'] = instance.municipio.nome
+
+        # Lightweight check to determine the type without loading the nested submodels' full schemas
+        tipo = 'Geral'
+        if hasattr(instance, 'supressao') and instance.supressao:
+            tipo = 'Supressão Vegetal'
+        elif hasattr(instance, 'avicultura') and instance.avicultura:
+            tipo = 'Avicultura'
+        elif hasattr(instance, 'suinocultura') and instance.suinocultura:
+            tipo = 'Suinocultura'
+        elif hasattr(instance, 'bovinocultura') and instance.bovinocultura:
+            tipo = 'Bovinocultura'
+        elif hasattr(instance, 'aquicultura') and instance.aquicultura:
+            tipo = 'Aquicultura'
+        elif hasattr(instance, 'sucroalcooleiro') and instance.sucroalcooleiro:
+            tipo = 'Sucroalcooleiro'
+        elif hasattr(instance, 'agricultura') and instance.agricultura:
+            tipo = 'Agricultura'
+        data_dict['tipo'] = tipo
+
+        return {
+            'local_id': str(instance.id),
+            'user': instance.user_id,
+            'data': data_dict,
+            'created_at': ret.get('created_at'),
+            'synced_at': ret.get('synced_at'),
+            'updated_at': ret.get('updated_at'),
+        }
+
 class VistoriaSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
     supressao = VistoriaSupressaoSerializer(read_only=True)
@@ -155,32 +201,34 @@ class VistoriaSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        vistoria = super().create(validated_data)
+        from django.db import transaction
+        with transaction.atomic():
+            validated_data['user'] = self.context['request'].user
+            vistoria = super().create(validated_data)
 
-        # Usar a Factory para criar o sub-modelo correspondente de forma dinâmica
-        initial_data = self.initial_data
-        if isinstance(initial_data, dict):
-            nested_data = initial_data.get('data', {})
-            if not isinstance(nested_data, dict):
-                nested_data = {}
-            
-            # Mescla dados raiz e aninhados para lidar com payloads planos e estruturados
-            merged_source = {**initial_data, **nested_data}
+            # Usar a Factory para criar o sub-modelo correspondente de forma dinâmica
+            initial_data = self.initial_data
+            if isinstance(initial_data, dict):
+                nested_data = initial_data.get('data', {})
+                if not isinstance(nested_data, dict):
+                    nested_data = {}
+                
+                # Mescla dados raiz e aninhados para lidar com payloads planos e estruturados
+                merged_source = {**initial_data, **nested_data}
 
-            # Normaliza variações de nomes de chaves (como 'qnt_' para 'qtd_')
-            normalized_source = {}
-            for k, v in merged_source.items():
-                norm_k = k
-                if k.startswith('qnt_'):
-                    norm_k = k.replace('qnt_', 'qtd_')
-                elif k.startswith('quantidade_'):
-                    norm_k = k.replace('quantidade_', 'qtd_')
-                normalized_source[norm_k] = v
+                # Normaliza variações de nomes de chaves (como 'qnt_' para 'qtd_')
+                normalized_source = {}
+                for k, v in merged_source.items():
+                    norm_k = k
+                    if k.startswith('qnt_'):
+                        norm_k = k.replace('qnt_', 'qtd_')
+                    elif k.startswith('quantidade_'):
+                        norm_k = k.replace('quantidade_', 'qtd_')
+                    normalized_source[norm_k] = v
 
-            tipo = normalized_source.get('tipo')
-            if tipo:
-                from .factories import VistoriaSubModelFactory
-                VistoriaSubModelFactory.create_sub_model(vistoria, tipo, normalized_source)
+                tipo = normalized_source.get('tipo')
+                if tipo:
+                    from .factories import VistoriaSubModelFactory
+                    VistoriaSubModelFactory.create_sub_model(vistoria, tipo, normalized_source)
 
-        return vistoria
+            return vistoria

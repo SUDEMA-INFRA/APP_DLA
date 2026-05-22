@@ -7,6 +7,9 @@ from .models import (
 class VistoriaSubModelFactory:
     _MAPPING = {
         'supressao': VistoriaSupressao,
+        'supressão vegetal': VistoriaSupressao,
+        'supressao vegetal': VistoriaSupressao,
+        'supressao_vegetal': VistoriaSupressao,
         'ambiental': VistoriaSupressao,  # Mapping 'Ambiental' to Supressao as default or fallback
         'avicultura': VistoriaAvicultura,
         'suinocultura': VistoriaSuinocultura,
@@ -14,6 +17,20 @@ class VistoriaSubModelFactory:
         'aquicultura': VistoriaAquicultura,
         'sucroalcooleiro': VistoriaSucroalcooleiro,
         'agricultura': VistoriaAgricultura,
+    }
+
+    _PAYLOAD_KEYS = {
+        'supressao': 'supressao',
+        'supressão vegetal': 'supressao',
+        'supressao vegetal': 'supressao',
+        'supressao_vegetal': 'supressao',
+        'ambiental': 'supressao',
+        'avicultura': 'avicultura',
+        'suinocultura': 'suinocultura',
+        'bovinocultura': 'bovinocultura',
+        'aquicultura': 'aquicultura',
+        'sucroalcooleiro': 'sucroalcooleiro',
+        'agricultura': 'agricultura',
     }
 
     @classmethod
@@ -32,9 +49,10 @@ class VistoriaSubModelFactory:
         if not model_class:
             return None
 
-        # Extract nested data if it exists under the tipo name (e.g. 'bovinocultura')
-        tipo_key = str(tipo).lower().strip()
-        data_to_extract = payload_data.get(tipo_key, payload_data)
+        # Extract nested data if it exists under the normalized payload key
+        tipo_normalized = str(tipo).lower().strip()
+        payload_key = cls._PAYLOAD_KEYS.get(tipo_normalized, tipo_normalized)
+        data_to_extract = payload_data.get(payload_key, payload_data)
         if not isinstance(data_to_extract, dict):
             data_to_extract = payload_data
 
@@ -59,9 +77,10 @@ class VistoriaSubModelFactory:
         if not model_class:
             return None
 
-        # Extract nested data if it exists under the tipo name (e.g. 'bovinocultura')
-        tipo_key = str(tipo).lower().strip()
-        data_to_extract = payload_data.get(tipo_key, payload_data)
+        # Extract nested data if it exists under the normalized payload key
+        tipo_normalized = str(tipo).lower().strip()
+        payload_key = cls._PAYLOAD_KEYS.get(tipo_normalized, tipo_normalized)
+        data_to_extract = payload_data.get(payload_key, payload_data)
         if not isinstance(data_to_extract, dict):
             data_to_extract = payload_data
 
