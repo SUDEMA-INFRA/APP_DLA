@@ -74,7 +74,7 @@ const VistoriaFilters: React.FC<VistoriaFiltersProps> = React.memo(({
             <option value="suinocultura">Suinocultura</option>
             <option value="bovinocultura">Bovinocultura</option>
             <option value="aquicultura">Aquicultura</option>
-            <option value="sucroalcooleiro">Sucroalcooleiro</option>
+            <option value="sucroalcooleiro">Atividades Agroindustriais</option>
             <option value="agricultura">Agricultura</option>
           </select>
 

@@ -1107,29 +1107,243 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
           ),
         ],
       );
-    } else if (tipo == 'Sucroalcooleiro') {
+    } else if (tipo == 'Sucroalcooleiro' || tipo == 'Atividades Agroindustriais') {
       final su = d['sucroalcooleiro'] ?? d;
       return _buildCard(
-        title: 'Especificações: Sucroalcooleiro',
+        title: 'Especificações: Atividades Agroindustriais',
         icon: Icons.factory_outlined,
         iconColor: Colors.purple,
         children: [
-          _buildRow('Resíduos Sólidos', su['residuos_solidos']?.toString() ?? 'Não informado'),
-          _buildRow('Destinação do Bagaço', su['bagaco']?.toString() ?? 'Não informado'),
-          _buildRow('Equipamentos Conformes?', su['equipamentos_conformes'] != false ? 'Sim' : 'Não'),
-          _buildRow('Armazenamento OK?', su['armazenamento_ok'] != false ? 'Sim' : 'Não'),
+          // HIGHLIGHT MATÉRIA PRIMA
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.purple.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.inventory_2_outlined, color: Colors.purple, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Armazenamento de Matéria-Prima', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      Text(
+                        su['local_materia_prima']?.toString() ?? 'Não informado',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.purple),
+                      ),
+                    ],
+                  ),
+                ),
+                if (su['foto_geo_ok'] == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gps_fixed, size: 10, color: Colors.blue),
+                        SizedBox(width: 4),
+                        Text('FOTO GEO OK', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blue)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          _buildSectionHeader('1. Efluentes, Resíduos e Bagaço', Icons.recycling_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Produz efluentes?', su['produz_efluentes'] == true),
+          if (su['produz_efluentes'] == true)
+            _buildRow('Coleta e Destinação Efluentes', su['efluentes_coleta_destinacao']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Produz resíduos sólidos?', su['produz_residuos'] == true),
+          if (su['produz_residuos'] == true)
+            _buildRow('Coleta e Destinação Resíduos', su['residuos_coleta_destinacao']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Gera/Utiliza bagaço?', su['gera_utiliza_bagaco'] == true),
+          if (su['gera_utiliza_bagaco'] == true)
+            _buildRow('Armazenamento/Destinação Bagaço', su['bagaco_armazenamento_destinacao']?.toString() ?? 'Não informado'),
+
+          _buildSectionHeader('2. Combustão e Fontes Térmicas', Icons.local_fire_department_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Existem fontes térmicas?', su['fontes_termicas'] == true),
+          if (su['fontes_termicas'] == true)
+            _buildRow('Fontes Térmicas Identificadas', su['fontes_termicas_quais']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Utiliza lenha como combustível?', su['utiliza_lenha'] == true),
+          if (su['utiliza_lenha'] == true) ...[
+            _buildRow('Origem da lenha', su['lenha_nativa_exotica']?.toString() == 'EXOTICA' ? 'Exótica' : 'Nativa'),
+            _buildRow('Local de armazenamento da lenha', su['lenha_local_armazenamento']?.toString() ?? 'Não informado'),
+          ],
+
+          _buildSectionHeader('3. Controle Técnico & Operacional', Icons.build_circle_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Tanques de armazenamento adequados/íntegros/identificados?', su['tanques_adequados'] == true),
+          _buildBoolIndicator('Existe higienização e controle de efluentes da limpeza?', su['higienizacao_controle_efluentes'] == true),
+          _buildBoolIndicator('Existe fossa séptica?', su['fossa_septica'] == true),
+          _buildBoolIndicator('Equipamentos conforme memorial descritivo?', su['equipamentos_memorial'] == true || su['equipamentos_conformes'] == true),
+          _buildBoolIndicator('Chaminés possuem sistemas de controle de emissões?', su['chamines_controle_emissoes'] == true),
+
+          _buildSectionHeader('4. Gestão de Vinhaça, Lagoas & Vazamentos', Icons.water_damage_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Possui sistema de coleta/transporte/armazenamento vinhaça?', su['sistema_vinhaca'] == true),
+          if (su['sistema_vinhaca'] == true)
+            _buildRow('Condições da Vinhaça', su['vinhaca_condicoes']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Possui tanques/lagoas impermeabilizadas?', su['tanques_lagoas_impermeabilizadas'] == true),
+          _buildBoolIndicator('Existem vazamentos ou infiltrações (tubulação/armazenamento)?', su['vazamentos_infiltracoes'] == true),
+          _buildBoolIndicator('Os efluentes são destinados corretamente?', su['efluentes_destinados_corretamente'] == true),
+          _buildBoolIndicator('Gestão de resíduos sólidos conforme PGRS?', su['gestao_residuos_pgrs'] == true),
+
+          _buildSectionHeader('5. Envase, Logística e Insumos', Icons.inventory_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Existe área específica para envase?', su['area_especifica_envase'] == true),
+          if (su['area_especifica_envase'] == true)
+            _buildRow('Condições de Envase', su['envase_condicoes']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Armazenamento atende aos requisitos ambientais?', su['armazenamento_requisitos_ambientais'] == true || su['armazenamento_ok'] == true),
+          _buildBoolIndicator('Faz uso de agrotóxicos?', su['faz_uso_agrotoxicos'] == true),
+          if (su['faz_uso_agrotoxicos'] == true) ...[
+            _buildRow('Quais agrotóxicos', su['agrotoxicos_quais']?.toString() ?? 'Não informado'),
+            _buildBoolIndicator('Possui receituário agronômico?', su['agrotoxicos_receituario'] == true),
+            _buildRow('Destinação embalagens', su['agrotoxicos_embalagens_destinacao']?.toString() ?? 'Não informado'),
+          ],
+
+          _buildSectionHeader('6. Ritos Legais & Fiscalização', Icons.gavel_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Registro Fotográfico Georreferenciado realizado conforme rito', su['foto_geo_ok'] == true),
+          _buildBoolIndicator('Constatação de infração ambiental no local', su['infracao_constatada'] == true),
+          if (su['infracao_constatada'] == true) ...[
+            _buildRow('Sugestão de Medidas DIFI', su['infracao_sugestao_medidas']?.toString() ?? su['medida_sugerida']?.toString() ?? 'Nenhuma sugerida'),
+          ],
+
+          _buildSectionHeader('7. Parecer Técnico & Informações', Icons.edit_note),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          const Text('Observações Técnicas / Parecer:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 4),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Text(
+              su['observacoes_complementares']?.toString() ?? su['observacoes']?.toString() ?? 'Sem parecer técnico registrado.',
+              style: const TextStyle(fontSize: 12, color: Colors.black87, height: 1.4),
+            ),
+          ),
         ],
       );
     } else if (tipo == 'Agricultura') {
       final ag = d['agricultura'] ?? d;
       return _buildCard(
-        title: 'Especificações: Agricultura',
+        title: 'Especificações: Atividades Agrícolas',
         icon: Icons.agriculture_outlined,
         iconColor: Colors.lightGreen,
         children: [
-          _buildRow('Cultivo', ag['cultivo']?.toString() ?? 'Não informado'),
-          _buildRow('Cursos Hídricos no Entorno', ag['cursos_hidricos_entorno']?.toString() ?? 'Não informado'),
-          _buildRow('Uso de Agrotóxicos', ag['agrotoxicos']?.toString() ?? 'Não informado'),
+          // HIGHLIGHT CULTIVO
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.lightGreen.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.lightGreen.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.agriculture, color: Colors.lightGreen, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Atividade Agrícola / Cultivo', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      Text(
+                        ag['atividade_agricola']?.toString() ?? ag['cultivo']?.toString() ?? 'Não informado',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade900),
+                      ),
+                    ],
+                  ),
+                ),
+                if (ag['foto_geo_ok'] == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gps_fixed, size: 10, color: Colors.blue),
+                        SizedBox(width: 4),
+                        Text('FOTO GEO OK', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blue)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          _buildSectionHeader('1. Irrigação & Recursos Hídricos', Icons.water_drop_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Atividade é Irrigada?', ag['atividade_irrigada'] == true),
+          if (ag['atividade_irrigada'] == true)
+            _buildRow('Possui outorga?', ag['irrigada_outorga']?.toString() ?? 'Não informado'),
+          _buildBoolIndicator('Existem corpos hídricos no entorno do cultivo?', ag['tem_cursos_hidricos'] == true || ag['cursos_hidricos_entorno']?.toString()?.toLowerCase() == 'sim'),
+
+          _buildSectionHeader('2. Uso de Defensivos & Insumos', Icons.pest_control_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Faz uso de agrotóxicos?', ag['faz_uso_agrotoxicos'] == true),
+          if (ag['faz_uso_agrotoxicos'] == true) ...[
+            _buildRow('Quais agrotóxicos', ag['agrotoxicos_quais']?.toString() ?? ag['agrotoxicos']?.toString() ?? 'Não detalhado'),
+            _buildBoolIndicator('Possui receituário agronômico?', ag['agrotoxicos_receituario'] == true),
+            _buildRow('Destinação de embalagens', ag['agrotoxicos_embalagens_destinacao']?.toString() ?? 'Não detalhado'),
+          ],
+
+          _buildSectionHeader('3. Ritos Legais & Fiscalização', Icons.gavel_outlined),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          _buildBoolIndicator('Registro Fotográfico Georreferenciado realizado conforme rito', ag['foto_geo_ok'] == true),
+          _buildBoolIndicator('Constatação de infração ambiental no local', ag['infracao_constatada'] == true),
+          if (ag['infracao_constatada'] == true) ...[
+            _buildRow('Sugestão de Medidas DIFI', ag['infracao_sugestao_medidas']?.toString() ?? ag['medida_sugerida']?.toString() ?? 'Nenhuma sugerida'),
+          ],
+
+          _buildSectionHeader('4. Parecer Técnico & Informações', Icons.edit_note),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+          const Text('Observações Técnicas / Parecer:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 4),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Text(
+              ag['observacoes_complementares']?.toString() ?? ag['observacoes']?.toString() ?? 'Sem parecer técnico registrado.',
+              style: const TextStyle(fontSize: 12, color: Colors.black87, height: 1.4),
+            ),
+          ),
         ],
       );
     } else {

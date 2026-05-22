@@ -1580,6 +1580,291 @@ const VistoriaEditDialog: React.FC<VistoriaEditDialogProps> = React.memo(({
                       </div>
                     </div>
                   );
+                } else if (typeKey === 'sucroalcooleiro') {
+                  const suc = subData || {};
+                  const updateField = (field: string, val: any) => {
+                    setEditingVistoria(prev => {
+                      if (!prev) return prev;
+                      const currentSuc = (prev.data as any).sucroalcooleiro || {};
+                      const updatedSuc = {
+                        ...currentSuc,
+                        [field]: val
+                      };
+
+                      // Legacy compatibility mappings
+                      if (field === 'produz_residuos' && val === false) {
+                        updatedSuc.residuos_coleta_destinacao = '';
+                        updatedSuc.residuos_solidos = '';
+                      }
+                      if (field === 'residuos_coleta_destinacao') {
+                        updatedSuc.residuos_solidos = val;
+                      }
+                      if (field === 'bagaco_armazenamento_destinacao') {
+                        updatedSuc.bagaco = val;
+                      }
+                      if (field === 'equipamentos_memorial') {
+                        updatedSuc.equipamentos_conformes = val;
+                      }
+                      if (field === 'armazenamento_requisitos_ambientais') {
+                        updatedSuc.armazenamento_ok = val;
+                      }
+                      if (field === 'faz_uso_agrotoxicos' && val === false) {
+                        updatedSuc.agrotoxicos_quais = '';
+                        updatedSuc.agrotoxicos_receituario = false;
+                        updatedSuc.agrotoxicos_embalagens_destinacao = '';
+                      }
+
+                      return {
+                        ...prev,
+                        data: {
+                          ...prev.data,
+                          sucroalcooleiro: updatedSuc
+                        }
+                      };
+                    });
+                  };
+
+                  return (
+                    <div className="space-y-6">
+                      {/* Bloco 1: Matéria-Prima e Efluentes */}
+                      <div className="bg-purple-50/20 dark:bg-purple-950/5 p-4 rounded-lg border border-purple-100 dark:border-purple-950/20 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-650 dark:text-purple-400 border-b pb-1 mb-2">
+                          1. Matéria-Prima e Efluentes
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditTextInput("Local de armazenamento da matéria-prima", suc.local_materia_prima, val => updateField('local_materia_prima', val), "Ex: Pátio de cana, galpão de recepção...")}
+                          {renderEditBoolSelect("Produz efluentes?", suc.produz_efluentes, val => updateField('produz_efluentes', val))}
+                          {suc.produz_efluentes && renderEditTextInput("Local de coleta e destinação dos efluentes", suc.efluentes_coleta_destinacao, val => updateField('efluentes_coleta_destinacao', val), "Ex: Lagoa de estabilização, canaletas...")}
+                          {renderEditBoolSelect("Produz resíduos sólidos?", suc.produz_residuos, val => updateField('produz_residuos', val))}
+                          {suc.produz_residuos && renderEditTextInput("Local de coleta e destinação dos resíduos sólidos", suc.residuos_coleta_destinacao, val => updateField('residuos_coleta_destinacao', val), "Ex: PGRS, compostagem...")}
+                        </div>
+                      </div>
+
+                      {/* Bloco 2: Subprodutos e Fontes Térmicas */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-650 dark:text-purple-400 border-b pb-1 mb-2">
+                          2. Subprodutos e Matriz Energética
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Gera/Utiliza bagaço?", suc.gera_utiliza_bagaco, val => updateField('gera_utiliza_bagaco', val))}
+                          {suc.gera_utiliza_bagaco && renderEditTextInput("Local de armazenamento e destinação do bagaço", suc.bagaco_armazenamento_destinacao, val => updateField('bagaco_armazenamento_destinacao', val), "Ex: Galpão de bagaço, queima na caldeira...")}
+                          {renderEditBoolSelect("Existem fontes térmicas?", suc.fontes_termicas, val => updateField('fontes_termicas', val))}
+                          {suc.fontes_termicas && renderEditTextInput("Qual a fonte térmica?", suc.fontes_termicas_quais, val => updateField('fontes_termicas_quais', val), "Ex: Caldeira a vapor, forno...")}
+                          {renderEditBoolSelect("Utiliza lenha como combustível?", suc.utiliza_lenha, val => updateField('utiliza_lenha', val))}
+                          {suc.utiliza_lenha && (
+                            <>
+                              {renderEditSelect("Origem da lenha", suc.lenha_nativa_exotica, val => updateField('lenha_nativa_exotica', val), [
+                                { value: "", label: "Selecione a origem..." },
+                                { value: "NATIVA", label: "Nativa" },
+                                { value: "EXOTICA", label: "Exótica" }
+                              ])}
+                              {renderEditTextInput("Local de armazenamento da lenha", suc.lenha_local_armazenamento, val => updateField('lenha_local_armazenamento', val), "Ex: Pátio coberto de lenha...")}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bloco 3: Instalações e Equipamentos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-650 dark:text-purple-400 border-b pb-1 mb-2">
+                          3. Integridade das Instalações e Equipamentos
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {renderEditBoolSelect("Tanques de armazenamento adequados/íntegros/identificados?", suc.tanques_adequados, val => updateField('tanques_adequados', val))}
+                          {renderEditBoolSelect("Higienização e controle de efluentes da limpeza?", suc.higienizacao_controle_efluentes, val => updateField('higienizacao_controle_efluentes', val))}
+                          {renderEditBoolSelect("Existe fossa séptica?", suc.fossa_septica, val => updateField('fossa_septica', val))}
+                          {renderEditBoolSelect("Equipamentos em conformidade com memorial?", suc.equipamentos_memorial, val => updateField('equipamentos_memorial', val))}
+                          {renderEditBoolSelect("Chaminés com sistemas de controle de emissões?", suc.chamines_controle_emissoes, val => updateField('chamines_controle_emissoes', val))}
+                        </div>
+                      </div>
+
+                      {/* Bloco 4: Vinhaça e Armazenamento Impermeabilizado */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-600 dark:text-purple-400 border-b pb-1 mb-2">
+                          4. Gestão de Vinhaça e Estanqueidade
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Coleta, transporte e armazenamento da vinhaça?", suc.sistema_vinhaca, val => updateField('sistema_vinhaca', val))}
+                          {suc.sistema_vinhaca && renderEditTextInput("Condições da vinhaça", suc.vinhaca_condicoes, val => updateField('vinhaca_condicoes', val), "Ex: Tubulação estanque, armazenamento impermeável...")}
+                          {renderEditBoolSelect("Tanques/lagoas impermeabilizadas?", suc.tanques_lagoas_impermeabilizadas, val => updateField('tanques_lagoas_impermeabilizadas', val))}
+                          {renderEditBoolSelect("Existem vazamentos ou infiltrações?", suc.vazamentos_infiltracoes, val => updateField('vazamentos_infiltracoes', val))}
+                          {renderEditBoolSelect("Efluentes destinados corretamente?", suc.efluentes_destinados_corretamente, val => updateField('efluentes_destinados_corretamente', val))}
+                          {renderEditBoolSelect("Gestão dos resíduos sólidos conforme PGRS?", suc.gestao_residuos_pgrs, val => updateField('gestao_residuos_pgrs', val))}
+                        </div>
+                      </div>
+
+                      {/* Bloco 5: Envase e Depósito */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-655 dark:text-purple-400 border-b pb-1 mb-2">
+                          5. Envase e Depósito de Produtos
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Existe área específica para envase?", suc.area_especifica_envase, val => updateField('area_especifica_envase', val))}
+                          {suc.area_especifica_envase && renderEditTextInput("Condições da área de envase", suc.envase_condicoes, val => updateField('envase_condicoes', val), "Ex: Piso higienizável, azulejado...")}
+                          {renderEditBoolSelect("Local de armazenamento atende requisitos ambientais?", suc.armazenamento_requisitos_ambientais, val => updateField('armazenamento_requisitos_ambientais', val))}
+                        </div>
+                      </div>
+
+                      {/* Bloco 6: Uso de Agrotóxicos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-purple-650 dark:text-purple-400 border-b pb-1 mb-2">
+                          6. Uso e Controle de Defensivos / Agrotóxicos
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Faz uso de agrotóxicos?", suc.faz_uso_agrotoxicos, val => updateField('faz_uso_agrotoxicos', val))}
+                          {suc.faz_uso_agrotoxicos && (
+                            <>
+                              {renderEditTextInput("Quais agrotóxicos utiliza?", suc.agrotoxicos_quais, val => updateField('agrotoxicos_quais', val), "Ex: Glifosato, Atrazina...")}
+                              {renderEditSelect("Possui receituário agronômico?", suc.agrotoxicos_receituario?.toString() || "", val => updateField('agrotoxicos_receituario', val), [
+                                { value: "", label: "Selecione..." },
+                                { value: "Sim", label: "Sim" },
+                                { value: "Não", label: "Não" }
+                              ])}
+                              {renderEditTextInput("Destinação das embalagens vazias", suc.agrotoxicos_embalagens_destinacao, val => updateField('agrotoxicos_embalagens_destinacao', val), "Ex: Devolução ao revendedor, tríplice lavagem...")}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bloco 7: Diagnóstico e Fiscalização (DIFI) */}
+                      <div className="bg-rose-50/10 dark:bg-rose-950/5 p-4 rounded-lg border border-rose-100/40 dark:border-rose-955/10 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-rose-600 dark:text-rose-400 border-b pb-1 mb-2">
+                          7. Ritos Legais e Fiscalização (DIFI)
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {renderEditBoolSelect("Registro fotográfico georreferenciado conforme rito?", suc.foto_geo_ok, val => updateField('foto_geo_ok', val))}
+                          {renderEditBoolSelect("Houve constatação de infração?", suc.infracao_constatada, val => updateField('infracao_constatada', val))}
+                        </div>
+                        {suc.infracao_constatada && (
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-500 block uppercase">Sugestão de medidas pela DIFI</label>
+                            <select
+                              className="flex h-9 w-full rounded-md border border-slate-200 bg-white dark:bg-slate-900 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:text-slate-200"
+                              value={suc.infracao_sugestao_medidas || ""}
+                              onChange={e => updateField('infracao_sugestao_medidas', e.target.value)}
+                            >
+                              <option value="">Selecione uma medida...</option>
+                              <option value="Notificação: Para adequação do projeto ou apresentação de documentos.">Notificação</option>
+                              <option value="Embargo: Para impedir continuidade de dano em área não autorizada.">Embargo</option>
+                              <option value="Auto de Infração: Lavrado por desobediência às normas ambientais.">Auto de Infração</option>
+                            </select>
+                          </div>
+                        )}
+                        {renderEditTextArea("Observações técnicas complementares", suc.observacoes_complementares, val => updateField('observacoes_complementares', val), "Informações adicionais identificadas na vistoria...")}
+                      </div>
+                    </div>
+                  );
+                } else if (typeKey === 'agricultura') {
+                  const agri = subData || {};
+                  const updateField = (field: string, val: any) => {
+                    setEditingVistoria(prev => {
+                      if (!prev) return prev;
+                      const currentAgri = (prev.data as any).agricultura || {};
+                      const updatedAgri = {
+                        ...currentAgri,
+                        [field]: val
+                      };
+
+                      // Legacy compatibility mappings
+                      if (field === 'atividade_agricola') {
+                        updatedAgri.cultivo = val;
+                      }
+                      if (field === 'tem_cursos_hidricos') {
+                        updatedAgri.cursos_hidricos_entorno = val ? 'Sim' : 'Não';
+                      }
+                      if (field === 'faz_uso_agrotoxicos' && val === false) {
+                        updatedAgri.agrotoxicos_quais = '';
+                        updatedAgri.agrotoxicos_receituario = false;
+                        updatedAgri.agrotoxicos_embalagens_destinacao = '';
+                        updatedAgri.agrotoxicos = '';
+                      }
+                      if (field === 'agrotoxicos_quais') {
+                        updatedAgri.agrotoxicos = val;
+                      }
+
+                      return {
+                        ...prev,
+                        data: {
+                          ...prev.data,
+                          agricultura: updatedAgri
+                        }
+                      };
+                    });
+                  };
+
+                  return (
+                    <div className="space-y-6">
+                      {/* Bloco 1: Identificação e Irrigação */}
+                      <div className="bg-lime-50/20 dark:bg-lime-950/5 p-4 rounded-lg border border-lime-100/40 dark:bg-lime-900/10 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-lime-600 dark:text-lime-400 border-b pb-1 mb-2">
+                          1. Identificação e Irrigação
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditTextInput("Atividade agrícola cultivada", agri.atividade_agricola, val => updateField('atividade_agricola', val), "Ex: Cultivo de milho, plantação de tomate...")}
+                          {renderEditBoolSelect("Atividade é Irrigada?", agri.atividade_irrigada, val => updateField('atividade_irrigada', val))}
+                          {agri.atividade_irrigada && renderEditTextInput("Possui outorga?", agri.irrigada_outorga, val => updateField('irrigada_outorga', val), "Ex: Outorga nº 1234/2026...")}
+                        </div>
+                      </div>
+
+                      {/* Bloco 2: Uso de Agrotóxicos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-lime-655 dark:text-lime-400 border-b pb-1 mb-2">
+                          2. Uso e Gestão de Agrotóxicos
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Faz uso de agrotóxicos?", agri.faz_uso_agrotoxicos, val => updateField('faz_uso_agrotoxicos', val))}
+                          {agri.faz_uso_agrotoxicos && (
+                            <>
+                              {renderEditTextInput("Quais agrotóxicos utiliza?", agri.agrotoxicos_quais, val => updateField('agrotoxicos_quais', val), "Ex: Glifosato, Carbofurano...")}
+                              {renderEditSelect("Possui receituário agronômico?", agri.agrotoxicos_receituario?.toString() || "", val => updateField('agrotoxicos_receituario', val), [
+                                { value: "", label: "Selecione..." },
+                                { value: "Sim", label: "Sim" },
+                                { value: "Não", label: "Não" }
+                              ])}
+                              {renderEditTextInput("Destinação das embalagens vazias", agri.agrotoxicos_embalagens_destinacao, val => updateField('agrotoxicos_embalagens_destinacao', val), "Ex: Devolução ao revendedor, tríplice lavagem...")}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bloco 3: Recursos Hídricos e Entorno */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 p-4 rounded-lg border border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-lime-655 dark:text-lime-400 border-b pb-1 mb-2">
+                          3. Recursos Hídricos e Entorno
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                          {renderEditBoolSelect("Existem cursos hídricos, nascentes ou reservatórios no entorno?", agri.tem_cursos_hidricos, val => updateField('tem_cursos_hidricos', val))}
+                        </div>
+                      </div>
+
+                      {/* Bloco 4: Diagnóstico e Fiscalização (DIFI) */}
+                      <div className="bg-rose-50/10 dark:bg-rose-950/5 p-4 rounded-lg border border-rose-100/40 dark:border-rose-955/10 space-y-3">
+                        <h4 className="text-xs font-bold uppercase text-rose-600 dark:text-rose-400 border-b pb-1 mb-2">
+                          4. Ritos Legais e Fiscalização (DIFI)
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {renderEditBoolSelect("Registro fotográfico georreferenciado conforme rito?", agri.foto_geo_ok, val => updateField('foto_geo_ok', val))}
+                          {renderEditBoolSelect("Houve constatação de infração?", agri.infracao_constatada, val => updateField('infracao_constatada', val))}
+                        </div>
+                        {agri.infracao_constatada && (
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-500 block uppercase">Sugestão de medidas pela DIFI</label>
+                            <select
+                              className="flex h-9 w-full rounded-md border border-slate-200 bg-white dark:bg-slate-900 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:text-slate-200"
+                              value={agri.infracao_sugestao_medidas || ""}
+                              onChange={e => updateField('infracao_sugestao_medidas', e.target.value)}
+                            >
+                              <option value="">Selecione uma medida...</option>
+                              <option value="Notificação: Para adequação do projeto ou apresentação de documentos.">Notificação</option>
+                              <option value="Embargo: Para impedir continuidade de dano em área não autorizada.">Embargo</option>
+                              <option value="Auto de Infração: Lavrado por desobediência às normas ambientais.">Auto de Infração</option>
+                            </select>
+                          </div>
+                        )}
+                        {renderEditTextArea("Informações complementares e parecer técnico", agri.observacoes_complementares, val => updateField('observacoes_complementares', val), "Informações adicionais identificadas na vistoria...")}
+                      </div>
+                    </div>
+                  );
                 }
 
                 // Fallback loop for other models (suinocultura, bovinocultura, etc)

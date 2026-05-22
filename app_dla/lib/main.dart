@@ -536,7 +536,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return matchesSearch && matchesFilterType;
     }).toList();
 
-    final List<String> chips = ['Todos', 'Supressão Vegetal', 'Avicultura', 'Suinocultura', 'Bovinocultura', 'Aquicultura', 'Sucroalcooleiro', 'Agricultura'];
+    final List<String> chips = ['Todos', 'Supressão Vegetal', 'Avicultura', 'Suinocultura', 'Bovinocultura', 'Aquicultura', 'Atividades Agroindustriais', 'Agricultura'];
 
     return Column(
       children: [

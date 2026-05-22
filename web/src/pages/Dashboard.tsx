@@ -120,13 +120,16 @@ const Dashboard: React.FC = () => {
   }, [vistorias]);
 
   const getVistoriaType = (v: VistoriaData) => {
-    if (v.data?.tipo) return v.data.tipo;
+    if (v.data?.tipo) {
+      if (v.data.tipo === 'Sucroalcooleiro') return 'Atividades Agroindustriais';
+      return v.data.tipo;
+    }
     if ((v.data as any)?.supressao) return 'Supressão Vegetal';
     if ((v.data as any)?.avicultura) return 'Avicultura';
     if ((v.data as any)?.suinocultura) return 'Suinocultura';
     if ((v.data as any)?.bovinocultura) return 'Bovinocultura';
     if ((v.data as any)?.aquicultura) return 'Aquicultura';
-    if ((v.data as any)?.sucroalcooleiro) return 'Sucroalcooleiro';
+    if ((v.data as any)?.sucroalcooleiro) return 'Atividades Agroindustriais';
     if ((v.data as any)?.agricultura) return 'Agricultura';
     return 'Geral';
   };
@@ -136,7 +139,7 @@ const Dashboard: React.FC = () => {
   const suinoculturaCount = vistorias.filter(v => getVistoriaType(v) === 'Suinocultura').length;
   const bovinoculturaCount = vistorias.filter(v => getVistoriaType(v) === 'Bovinocultura').length;
   const aquiculturaCount = vistorias.filter(v => getVistoriaType(v) === 'Aquicultura').length;
-  const sucroalcooleiroCount = vistorias.filter(v => getVistoriaType(v) === 'Sucroalcooleiro').length;
+  const sucroalcooleiroCount = vistorias.filter(v => getVistoriaType(v) === 'Atividades Agroindustriais').length;
   const agriculturaCount = vistorias.filter(v => getVistoriaType(v) === 'Agricultura').length;
 
   const categories = useMemo(() => {
@@ -146,7 +149,7 @@ const Dashboard: React.FC = () => {
       { name: 'Suinocultura', count: suinoculturaCount, icon: Activity, color: 'bg-pink-500 dark:bg-pink-400', textColor: 'text-pink-500 dark:text-pink-400', glow: 'shadow-pink-500/10 dark:shadow-pink-400/5' },
       { name: 'Bovinocultura', count: bovinoculturaCount, icon: Beef, color: 'bg-indigo-500 dark:bg-indigo-400', textColor: 'text-indigo-500 dark:text-indigo-400', glow: 'shadow-indigo-500/10 dark:shadow-indigo-400/5' },
       { name: 'Aquicultura', count: aquiculturaCount, icon: Fish, color: 'bg-blue-500 dark:bg-blue-400', textColor: 'text-blue-500 dark:text-blue-400', glow: 'shadow-blue-500/10 dark:shadow-blue-400/5' },
-      { name: 'Sucroalcooleiro', count: sucroalcooleiroCount, icon: Factory, color: 'bg-purple-500 dark:bg-purple-400', textColor: 'text-purple-500 dark:text-purple-400', glow: 'shadow-purple-500/10 dark:shadow-purple-400/5' },
+      { name: 'Atividades Agroindustriais', count: sucroalcooleiroCount, icon: Factory, color: 'bg-purple-500 dark:bg-purple-400', textColor: 'text-purple-500 dark:text-purple-400', glow: 'shadow-purple-500/10 dark:shadow-purple-400/5' },
       { name: 'Agricultura', count: agriculturaCount, icon: Sprout, color: 'bg-lime-500 dark:bg-lime-400', textColor: 'text-lime-500 dark:text-lime-400', glow: 'shadow-lime-500/10 dark:shadow-lime-400/5' },
     ].sort((a, b) => b.count - a.count);
   }, [supressaoCount, aviculturaCount, suinoculturaCount, bovinoculturaCount, aquiculturaCount, sucroalcooleiroCount, agriculturaCount]);

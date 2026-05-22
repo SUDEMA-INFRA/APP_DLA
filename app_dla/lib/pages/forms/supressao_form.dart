@@ -20,7 +20,6 @@ class _SupressaoFormState extends State<SupressaoForm> {
   // Styles & Colors
   static const Color forestGreen = Color(0xFF006b33);
   static const Color darkSlate = Color(0xFF1e293b);
-  static const Color amberDark = Color(0xFFb45309);
 
   // States
   bool _temCursoDagua = false;
@@ -84,12 +83,25 @@ class _SupressaoFormState extends State<SupressaoForm> {
     _rlIsolada = d['rl_isolada'] != false;
     _rlNativaCompativel = d['rl_nativa_compativel'] != false;
     
-    _bioma = d['bioma']?.toString()?.toUpperCase();
+    _bioma = d['bioma']?.toString().toUpperCase();
     if (_bioma != 'MA' && _bioma != 'CAATINGA') {
       _bioma = 'MA';
     }
 
-    _blocoAEstagioSucessional = d['bloco_a_estagio_sucessional']?.toString() ?? 'Inicial';
+    final String? rawEstagio = d['bloco_a_estagio_sucessional']?.toString();
+    const estagiosValidos = ['Inicial', 'Médio', 'Avançado'];
+    if (rawEstagio != null && estagiosValidos.contains(rawEstagio)) {
+      _blocoAEstagioSucessional = rawEstagio;
+    } else if (rawEstagio != null && rawEstagio.startsWith('Inicial')) {
+      _blocoAEstagioSucessional = 'Inicial';
+    } else if (rawEstagio != null && (rawEstagio.startsWith('Médio') || rawEstagio.startsWith('Medio'))) {
+      _blocoAEstagioSucessional = 'Médio';
+    } else if (rawEstagio != null && rawEstagio.startsWith('Avançado')) {
+      _blocoAEstagioSucessional = 'Avançado';
+    } else {
+      _blocoAEstagioSucessional = 'Inicial';
+    }
+
     _blocoADapOption = d['bloco_a_dap_opcao']?.toString() ?? 'Até 8 cm';
     _blocoAAlturaOption = d['bloco_a_altura_opcao']?.toString() ?? 'Até 5 m';
     _blocoASerapilheiraOption = d['bloco_a_serapilheira_opcao']?.toString() ?? 'Inexistente ou rala';
@@ -103,7 +115,20 @@ class _SupressaoFormState extends State<SupressaoForm> {
     _presencaInvasoras = d['presenca_invasoras'] == true;
     _presencaExoticas = d['presenca_exoticas'] == true;
     _especiesInvasorasController = TextEditingController(text: d['especies']?.toString() ?? '');
-    _grauInfestacaoOption = d['grau_infestacao']?.toString() ?? 'Baixo';
+
+    final String? rawGrau = d['grau_infestacao']?.toString();
+    const grausValidos = ['Baixo', 'Médio', 'Alto'];
+    if (rawGrau != null && grausValidos.contains(rawGrau)) {
+      _grauInfestacaoOption = rawGrau;
+    } else if (rawGrau != null && rawGrau.startsWith('Baixo')) {
+      _grauInfestacaoOption = 'Baixo';
+    } else if (rawGrau != null && (rawGrau.startsWith('Médio') || rawGrau.startsWith('Medio'))) {
+      _grauInfestacaoOption = 'Médio';
+    } else if (rawGrau != null && rawGrau.startsWith('Alto')) {
+      _grauInfestacaoOption = 'Alto';
+    } else {
+      _grauInfestacaoOption = 'Baixo';
+    }
     
     _locApp = d['loc_app'] == true || d['loc_app']?.toString() == 'Sim';
     _locRl = d['loc_rl'] == true || d['loc_rl']?.toString() == 'Sim';
@@ -315,8 +340,34 @@ class _SupressaoFormState extends State<SupressaoForm> {
 
   @override
   Widget build(BuildContext context) {
+    // Sanitização de segurança em tempo de execução para imunidade absoluta contra crashes de Dropdown
+    const estagiosValidos = ['Inicial', 'Médio', 'Avançado'];
+    if (_blocoAEstagioSucessional == null || !estagiosValidos.contains(_blocoAEstagioSucessional)) {
+      if (_blocoAEstagioSucessional != null && _blocoAEstagioSucessional!.startsWith('Inicial')) {
+        _blocoAEstagioSucessional = 'Inicial';
+      } else if (_blocoAEstagioSucessional != null && (_blocoAEstagioSucessional!.startsWith('Médio') || _blocoAEstagioSucessional!.startsWith('Medio'))) {
+        _blocoAEstagioSucessional = 'Médio';
+      } else if (_blocoAEstagioSucessional != null && _blocoAEstagioSucessional!.startsWith('Avançado')) {
+        _blocoAEstagioSucessional = 'Avançado';
+      } else {
+        _blocoAEstagioSucessional = 'Inicial';
+      }
+    }
+
+    const grausValidos = ['Baixo', 'Médio', 'Alto'];
+    if (_grauInfestacaoOption == null || !grausValidos.contains(_grauInfestacaoOption)) {
+      if (_grauInfestacaoOption != null && _grauInfestacaoOption!.startsWith('Baixo')) {
+        _grauInfestacaoOption = 'Baixo';
+      } else if (_grauInfestacaoOption != null && (_grauInfestacaoOption!.startsWith('Médio') || _grauInfestacaoOption!.startsWith('Medio'))) {
+        _grauInfestacaoOption = 'Médio';
+      } else if (_grauInfestacaoOption != null && _grauInfestacaoOption!.startsWith('Alto')) {
+        _grauInfestacaoOption = 'Alto';
+      } else {
+        _grauInfestacaoOption = 'Baixo';
+      }
+    }
+
     final bool isMa = _bioma == 'MA';
-    final String biomaName = isMa ? 'Mata Atlântica' : 'Caatinga';
 
     return Card(
       color: Colors.green.shade50,
@@ -501,20 +552,76 @@ class _SupressaoFormState extends State<SupressaoForm> {
               ),
               const SizedBox(height: 12),
               
-              DropdownButtonFormField<String>(
-                value: _blocoAEstagioSucessional,
-                decoration: const InputDecoration(
-                  labelText: 'Estágio Sucessional da Vegetação',
-                  border: OutlineInputBorder(),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
-                items: ['Inicial', 'Médio', 'Avançado']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) => _updateBlocoAParameters(val!),
+              const Text(
+                'Estágio Sucessional da Vegetação:',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: darkSlate),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Inicial', style: TextStyle(fontSize: 12))),
+                      selected: _blocoAEstagioSucessional == 'Inicial',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _blocoAEstagioSucessional == 'Inicial' ? forestGreen : darkSlate,
+                        fontWeight: _blocoAEstagioSucessional == 'Inicial' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                _updateBlocoAParameters('Inicial');
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Médio', style: TextStyle(fontSize: 12))),
+                      selected: _blocoAEstagioSucessional == 'Médio',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _blocoAEstagioSucessional == 'Médio' ? forestGreen : darkSlate,
+                        fontWeight: _blocoAEstagioSucessional == 'Médio' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                _updateBlocoAParameters('Médio');
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Avançado', style: TextStyle(fontSize: 12))),
+                      selected: _blocoAEstagioSucessional == 'Avançado',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _blocoAEstagioSucessional == 'Avançado' ? forestGreen : darkSlate,
+                        fontWeight: _blocoAEstagioSucessional == 'Avançado' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                _updateBlocoAParameters('Avançado');
+                              }
+                            },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -641,23 +748,79 @@ class _SupressaoFormState extends State<SupressaoForm> {
                 onChanged: (_) => _notifyChanges(),
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _grauInfestacaoOption,
-                decoration: const InputDecoration(
-                  labelText: 'Grau de Infestação',
-                  border: OutlineInputBorder(),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
-                items: ['Baixo', 'Médio', 'Alto']
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                    .toList(),
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _grauInfestacaoOption = val);
-                        _notifyChanges();
-                      },
+              const Text(
+                'Grau de Infestação:',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: darkSlate),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Baixo', style: TextStyle(fontSize: 12))),
+                      selected: _grauInfestacaoOption == 'Baixo',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _grauInfestacaoOption == 'Baixo' ? forestGreen : darkSlate,
+                        fontWeight: _grauInfestacaoOption == 'Baixo' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                setState(() => _grauInfestacaoOption = 'Baixo');
+                                _notifyChanges();
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Médio', style: TextStyle(fontSize: 12))),
+                      selected: _grauInfestacaoOption == 'Médio',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _grauInfestacaoOption == 'Médio' ? forestGreen : darkSlate,
+                        fontWeight: _grauInfestacaoOption == 'Médio' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                setState(() => _grauInfestacaoOption = 'Médio');
+                                _notifyChanges();
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Center(child: Text('Alto', style: TextStyle(fontSize: 12))),
+                      selected: _grauInfestacaoOption == 'Alto',
+                      selectedColor: forestGreen.withOpacity(0.15),
+                      checkmarkColor: forestGreen,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: _grauInfestacaoOption == 'Alto' ? forestGreen : darkSlate,
+                        fontWeight: _grauInfestacaoOption == 'Alto' ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      onSelected: widget.readOnly
+                          ? null
+                          : (selected) {
+                              if (selected) {
+                                setState(() => _grauInfestacaoOption = 'Alto');
+                                _notifyChanges();
+                              }
+                            },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               const Text(

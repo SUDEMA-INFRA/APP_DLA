@@ -27,9 +27,9 @@ class PrintPreviewDialog extends StatelessWidget {
     );
   }
 
-  /// Chars por linha na impressora 58mm
-  static const int _charsPerLineSize1 = 42; // Font B compact (42 colunas)
-  static const int _charsPerLineSize2 = 21; // Font B compact double-width (21 colunas)
+  /// Chars por linha na impressora 58mm (32 colunas)
+  static const int _charsPerLineSize1 = 32; // Font A (32 colunas)
+  static const int _charsPerLineSize2 = 16; // Font A double-width (16 colunas)
 
   /// Padding interno do "papel"
   static const double _paperHPadding = 6.0;

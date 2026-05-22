@@ -136,63 +136,359 @@ class PrintService {
     addLine('Data: $dateStr');
     addLine('Lat: ${data['latitude'] ?? 'N/A'}');
     addLine('Long: ${data['longitude'] ?? 'N/A'}');
-    addLine(separator, align: PosAlign.center);
 
     // Dados Específicos dependendo do tipo de vistoria
     final tipo = (data['tipo']?.toString() ?? '').toLowerCase();
 
     if (tipo.contains('supress') || tipo.contains('ambiental') || data.containsKey('supressao')) {
       final s = data['supressao'] ?? data;
+      final bool isMa = s['bioma'] == 'MA' || s['bioma']?.toString().toUpperCase() == 'MATA ATLÂNTICA';
+      final String biomaName = isMa ? 'Mata Atlantica' : 'Caatinga';
+      
+      addLine(separator, align: PosAlign.center);
       addLine('DADOS DE SUPRESSAO VEGETAL', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Bioma Predominante: $biomaName');
       addLine('Curso d\'agua: ${s['tem_curso_dagua'] == true ? 'Sim' : 'Nao'}');
       addLine('APP Preservada: ${s['app_preservada'] == true ? 'Sim' : 'Nao'}');
-      addLine('Bioma: ${s['bioma'] ?? 'N/A'}');
-      addLine('Obs: ${s['observacoes'] ?? 'Nao informado'}');
+      addLine('Indicios Uso APP: ${s['indicios_uso_app'] == true ? 'Sim' : 'Nao'}');
+      addLine('RL Isolada: ${s['rl_isolada'] == true ? 'Sim' : 'Nao'}');
+      addLine('RL Compativel CAR: ${s['rl_nativa_compativel'] == true ? 'Sim' : 'Nao'}');
 
-    } else if (tipo.contains('avicultura') || data.containsKey('avicultura')) {
+      addLine(separator, align: PosAlign.center);
+      addLine('FICHA TECNICA DO BIOMA', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      if (isMa) {
+        addLine('Estagio Sucessional: ${s['bloco_a_estagio_sucessional'] ?? 'N/A'}');
+        addLine('DAP Medio: ${s['bloco_a_dap_opcao'] ?? 'N/A'}');
+        addLine('Altura (Dossel): ${s['bloco_a_altura_opcao'] ?? 'N/A'}');
+        addLine('Serapilheira: ${s['bloco_a_serapilheira_opcao'] ?? 'N/A'}');
+        addLine('Epifitas / Cipos: ${s['bloco_a_epifitas_opcao'] ?? 'N/A'}');
+        addLine('Sub-bosque: ${s['bloco_a_subbosque_opcao'] ?? 'N/A'}');
+        if (s['bloco_a_observacoes'] != null && s['bloco_a_observacoes'].toString().isNotEmpty) {
+          addLine('Obs Bloco A: ${s['bloco_a_observacoes']}');
+        }
+      } else {
+        addLine('Caatinga Estrutura: ${s['bloco_b_estrutura'] ?? 'N/A'}');
+        if (s['bloco_b_observacoes'] != null && s['bloco_b_observacoes'].toString().isNotEmpty) {
+          addLine('Obs Bloco B: ${s['bloco_b_observacoes']}');
+        }
+      }
+
+      addLine(separator, align: PosAlign.center);
+      addLine('DIAGNOSTICO FISICO-AMBIENTAL', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Especies Invasoras: ${s['presenca_invasoras'] == true ? 'Sim' : 'Nao'}');
+      addLine('Especies Exoticas: ${s['presenca_exoticas'] == true ? 'Sim' : 'Nao'}');
+      if (s['presenca_invasoras'] == true || s['presenca_exoticas'] == true) {
+        addLine('Especies: ${s['especies'] ?? 'N/A'}');
+        addLine('Grau de Infestacao: ${s['grau_infestacao'] ?? 'N/A'}');
+        addLine('Loc: APP:${s['loc_app'] == true ? 'S' : 'N'} | RL:${s['loc_rl'] == true ? 'S' : 'N'} | UAS:${s['loc_uas'] == true ? 'S' : 'N'}');
+      }
+      addLine('Pastos Abandonados: ${s['pastos_abandonados'] == true ? 'Sim' : 'Nao'}');
+      addLine('Supressao/Mov. Solo: ${s['supressao_solo'] == true ? 'Sim' : 'Nao'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('REGISTRO DE FOGO', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Fogo APP: ${s['fogo_app'] == true ? 'Sim' : 'Nao'} | RL: ${s['fogo_rl'] == true ? 'Sim' : 'Nao'}');
+      addLine('Fogo UAS: ${s['fogo_uas'] == true ? 'Sim' : 'Nao'} | Outras: ${s['fogo_outras'] == true ? 'Sim' : 'Nao'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      final bool infracaoConstatada = s['infracao']?.toString().startsWith('Sim') == true || s['infracao_constatada'] == true;
+      addLine('Infracao Constatada: ${infracaoConstatada ? 'Sim' : 'Nao'}');
+      if (s['infracao'] != null && s['infracao'].toString().isNotEmpty) {
+        addLine('Det. Infracao: ${s['infracao']}');
+      }
+      addLine('Medida Sugerida DIFI: ${s['medida_sugerida'] ?? 'Nenhuma'}');
+      addLine('Foto Geo OK: ${s['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Parecer: ${s['observacoes'] ?? 'Sem parecer'}');
+
+    } else if (tipo.contains('aviculture') || tipo.contains('avicultura') || data.containsKey('avicultura')) {
       final a = data['avicultura'] ?? data;
+      final String modelo = a['modelo']?.toString().toUpperCase() ?? 'CORTE';
+      final bool isCorte = modelo == 'CORTE';
+
+      addLine(separator, align: PosAlign.center);
       addLine('DADOS DE AVICULTURA', bold: true, align: PosAlign.center);
-      addLine('Modelo: ${a['modelo'] ?? 'N/A'}');
-      addLine('Criacao: ${a['tipo_criacao'] ?? 'N/A'}');
-      addLine('Galpoes: ${a['qtd_galpoes'] ?? 'N/A'}');
-      addLine('Animais: ${a['qtd_animais'] ?? 'N/A'}');
+      addLine(separator, align: PosAlign.center);
+      addLine('Modelo: ${isCorte ? 'Corte (Frango)' : 'Postura (Ovos)'}');
+
+      if (isCorte) {
+        addLine(separator, align: PosAlign.center);
+        addLine('PARAMETROS DE CORTE', bold: true, align: PosAlign.center);
+        addLine(separator, align: PosAlign.center);
+        addLine('Sistema Criacao: ${a['corte_sistema_criacao'] ?? 'N/A'}');
+        addLine('Densidade Recomendada: ${a['corte_densidade'] ?? 'N/A'}');
+        addLine('Aves Soltas Chao: ${a['corte_aves_soltas_chao'] == true ? 'Sim' : 'Nao'}');
+        addLine('Cama (Casca Arroz): ${a['corte_cama_casca_arroz'] == true ? 'Sim' : 'Nao'}');
+        addLine('Galpoes Longos: ${a['corte_galpoes_longos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Galpoes Curtos: ${a['corte_galpoes_curtos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Bebedouros Chao: ${a['corte_bebedouros_chao'] == true ? 'Sim' : 'Nao'}');
+        addLine('Bebedouros Suspensos: ${a['corte_bebedouros_suspensos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Comedouros Chao: ${a['corte_comedouros_chao'] == true ? 'Sim' : 'Nao'}');
+        addLine('Comedouros Suspensos: ${a['corte_comedouros_suspensos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Fase Pintos: ${a['corte_pintos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Fase Frangos: ${a['corte_frangos'] == true ? 'Sim' : 'Nao'}');
+        addLine('Possui Ventiladores: ${a['corte_ventiladores'] == true ? 'Sim' : 'Nao'}');
+        if (a['corte_ventiladores'] == true) {
+          addLine('Ventiladores Func: ${a['corte_ventiladores_func'] == true ? 'Sim' : 'Nao'}');
+        }
+        addLine('Sem Ventiladores: ${a['corte_sem_ventiladores'] == true ? 'Sim' : 'Nao'}');
+        addLine('Medidas: ${a['corte_comprimento'] ?? 'N/A'}m x ${a['corte_largura'] ?? 'N/A'}m');
+        addLine('Area Calculada: ${a['corte_area'] ?? 'N/A'} m2');
+        addLine('Estimativa Animais: ${a['corte_qtd_estimada'] ?? 'N/A'}');
+        addLine('Destinacao Cama: ${a['corte_cama_destinacao'] ?? 'N/A'}');
+        if (a['corte_cama_destinacao']?.toString() == 'Outros') {
+          addLine('Detalhes Destino: ${a['corte_cama_outros'] ?? 'N/A'}');
+        }
+        if (a['corte_info_adicional'] != null && a['corte_info_adicional'].toString().trim().isNotEmpty) {
+          addLine('Obs Especificas: ${a['corte_info_adicional']}');
+        }
+      } else {
+        addLine(separator, align: PosAlign.center);
+        addLine('PARAMETROS DE POSTURA', bold: true, align: PosAlign.center);
+        addLine(separator, align: PosAlign.center);
+        addLine('Sistema Criacao: ${a['postura_sistema_criacao'] ?? 'N/A'}');
+        addLine('Confinamento: ${a['postura_tipo_confinamento'] ?? 'N/A'}');
+        addLine('Fileiras: ${a['postura_fileiras'] ?? 'N/A'} | Andares: ${a['postura_andares'] ?? 'N/A'}');
+        addLine('Gaiolas/Modulo: ${a['postura_gaiolas_modulo'] ?? 'N/A'}');
+        addLine('Aves por Gaiola: ${a['postura_aves_gaiola'] ?? 'N/A'}');
+        addLine('Estimativa Total Aves: ${a['postura_qtd_estimada'] ?? 'N/A'}');
+        if (a['postura_info_adicional'] != null && a['postura_info_adicional'].toString().trim().isNotEmpty) {
+          addLine('Obs Especificas: ${a['postura_info_adicional']}');
+        }
+      }
+
+      addLine(separator, align: PosAlign.center);
+      addLine('MEIO AMBIENTE & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Gera Residuos: ${a['gera_residuos'] == true ? 'Sim' : 'Nao'}');
+      if (a['gera_residuos'] == true && a['residuos_detalhes'] != null && a['residuos_detalhes'].toString().isNotEmpty) {
+        addLine('Det Residuos: ${a['residuos_detalhes']}');
+      }
+      addLine('Mortos Incinerados: ${a['mortos_incinerados'] != false ? 'Sim' : 'Nao'}');
+      if (a['mortos_incinerados'] == false && a['mortos_destinacao_alt'] != null && a['mortos_destinacao_alt'].toString().isNotEmpty) {
+        addLine('Destino Alternativo: ${a['mortos_destinacao_alt']}');
+      }
+      addLine('Infracao Constatada: ${a['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      addLine('Medida Sugerida DIFI: ${a['medida_sugerida'] ?? 'Nenhuma'}');
+      addLine('Foto Geo OK: ${a['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Parecer: ${a['observacoes'] ?? 'Sem parecer'}');
 
     } else if (tipo.contains('suinocultura') || data.containsKey('suinocultura')) {
       final s = data['suinocultura'] ?? data;
+      final String modelo = s['modelo']?.toString().toUpperCase() ?? 'CAIPIRA';
+
+      addLine(separator, align: PosAlign.center);
       addLine('DADOS DE SUINOCULTURA', bold: true, align: PosAlign.center);
-      addLine('Galpoes: ${s['qtd_galpoes'] ?? 'N/A'}');
-      addLine('Animais: ${s['qtd_animais'] ?? 'N/A'}');
-      addLine('Fase Prod.: ${s['fase_producao'] ?? 'N/A'}');
+      addLine(separator, align: PosAlign.center);
+      addLine('Modelo: ${modelo == 'INDUSTRIAL' ? 'Industrial' : 'Caipira'}');
+      addLine('Qtd Galpoes: ${s['qtd_galpoes'] ?? 'N/A'}');
+      addLine('Media por Galpao: ${s['qtd_medio_por_galpao'] ?? 'N/A'}');
+      addLine('Total Animais: ${s['qtd_animais'] ?? 'N/A'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FASES DE PRODUCAO', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Terminacao: ${s['fase_terminacao'] == true ? 'Sim (${s['fase_terminacao_qtd'] ?? 0})' : 'Nao'}');
+      addLine('Matrizes Gestantes: ${s['fase_matrizes'] == true ? 'Sim (${s['fase_matrizes_qtd'] ?? 0})' : 'Nao'}');
+      addLine('Reprodutores: ${s['fase_reprodutores'] == true ? 'Sim (${s['fase_reprodutores_qtd'] ?? 0})' : 'Nao'}');
+      addLine('Suino Adulto: ${s['fase_adulto'] == true ? 'Sim (${s['fase_adulto_qtd'] ?? 0})' : 'Nao'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('DIAGNOSTICO SANITARIO', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Acumulo Residuos: ${s['acumulo_residuos'] == true ? 'Sim' : 'Nao'}');
+      addLine('Vazamento Dejetos: ${s['vazamento_dejetos'] == true ? 'Sim' : 'Nao'}');
+      addLine('Odor Extremo: ${s['odor_extremo'] == true ? 'Sim' : 'Nao'}');
+      addLine('Dejetos Transbordando: ${s['dejetos_transbordando'] == true ? 'Sim' : 'Nao'}');
+      addLine('Impermeabilizacao/Contencao: ${s['impermeabilizacao_contencao'] == true ? 'Sim' : 'Nao'}');
+      addLine('Destinacao/Tratamento: ${s['destinacao_adequada'] == true ? 'Sim' : 'Nao'}');
+
+      addLine('Indicios Porte Maior: ${s['indicios_porte_maior'] == true ? 'Sim' : 'Nao'}');
+      if (s['indicios_porte_maior'] == true && s['indicios_porte_maior_detalhe'] != null && s['indicios_porte_maior_detalhe'].toString().isNotEmpty) {
+        addLine('Det Porte: ${s['indicios_porte_maior_detalhe']}');
+      }
+
+      addLine('Mortos Incinerados: ${s['mortos_incinerados'] != false ? 'Sim' : 'Nao'}');
+      if (s['mortos_incinerados'] == false && s['mortos_destino'] != null && s['mortos_destino'].toString().isNotEmpty) {
+        addLine('Destino Mortos: ${s['mortos_destino']}');
+      }
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Infracao Constatada: ${s['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      addLine('Medida Sugerida DIFI: ${s['medida_sugerida'] ?? 'Nenhuma'}');
+      addLine('Foto Geo OK: ${s['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Parecer: ${s['observacoes'] ?? 'Sem parecer'}');
 
     } else if (tipo.contains('bovinocultura') || data.containsKey('bovinocultura')) {
       final b = data['bovinocultura'] ?? data;
+      final bool isIntensivo = b['modelo']?.toString().toUpperCase() == 'INTENSIVO';
+
+      addLine(separator, align: PosAlign.center);
       addLine('DADOS DE BOVINOCULTURA', bold: true, align: PosAlign.center);
-      addLine('Modelo: ${b['modelo'] ?? 'N/A'}');
-      addLine('Area (Ha): ${b['area_ha'] ?? 'N/A'}');
+      addLine(separator, align: PosAlign.center);
+      addLine('Modelo: ${isIntensivo ? 'Intensivo (Confinamento)' : 'Extensivo (Pasto)'}');
+      addLine('Area Destinada (ha): ${b['area_ha'] ?? 'N/A'}');
+      addLine('Quantidade de Cochos: ${b['qtd_cochos'] ?? 'N/A'}');
+      addLine('Tamanho Cochos (m): ${b['tamanho_cochos'] ?? 'N/A'}');
       addLine('Dessedentacao: ${b['dessedentacao'] ?? 'N/A'}');
+      addLine('Total Animais: ${b['qtd_animais'] ?? 'N/A'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Infracao Constatada: ${b['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      addLine('Medida Sugerida DIFI: ${b['medida_sugerida'] ?? 'Nenhuma'}');
+      addLine('Foto Geo OK: ${b['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Parecer: ${b['observacoes'] ?? 'Sem parecer'}');
 
     } else if (tipo.contains('aquicultura') || data.containsKey('aquicultura')) {
       final aq = data['aquicultura'] ?? data;
-      addLine('DADOS DE AQUICULTURA', bold: true, align: PosAlign.center);
-      addLine('Tanques: ${aq['qtd_tanques'] ?? 'N/A'}');
-      addLine('Hidrometro: ${aq['hidrometro'] == true ? 'Sim' : 'Nao'}');
-      addLine('Outorga: ${aq['outorga'] == true ? 'Sim' : 'Nao'}');
-      addLine('Fonte de Agua: ${aq['fonte_agua'] ?? 'N/A'}');
+      final bool possessesAeradores = aq['possui_aeradores'] == true;
+      final String descarte = aq['descarte_residuos']?.toString().toUpperCase() ?? 'COMPOSTEIRA';
 
-    } else if (tipo.contains('sucroalcooleiro') || data.containsKey('sucroalcooleiro')) {
+      addLine(separator, align: PosAlign.center);
+      addLine('DADOS DE AQUICULTURA', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Viveiros: ${aq['qtd_tanques'] ?? 0} tanques | ${aq['area_tanques'] ?? 0} ha');
+      addLine('Tanques com Aeradores: ${possessesAeradores ? 'Sim' : 'Nao'}');
+      if (possessesAeradores) {
+        addLine('Qtd Aeradores/Tanque: ${aq['qtd_aeradores'] ?? 'N/A'}');
+      }
+
+      addLine(separator, align: PosAlign.center);
+      addLine('EQUIPAMENTOS IDENTIFICADOS', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Bomba: ${aq['bomba_identificada'] == true ? 'Sim (${aq['bomba_situacao'] ?? "N/A"})' : 'Nao'}');
+      addLine('Tubulacao: ${aq['tubulacao_identificada'] == true ? 'Sim (${aq['tubulacao_situacao'] ?? "N/A"})' : 'Nao'}');
+      addLine('Ponto Captacao: ${aq['captacao_identificada'] == true ? 'Sim (${aq['captacao_situacao'] ?? "N/A"})' : 'Nao'}');
+      addLine('Hidrometro: ${aq['hidrometro'] == true ? 'Sim (${aq['hidrometro_situacao'] ?? "N/A"})' : 'Nao'}');
+      addLine('Outros Itens: ${aq['outros_itens_identificados'] == true ? 'Sim (${aq['outros_itens_situacao'] ?? "N/A"})' : 'Nao'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('RECURSOS HIDRICOS & RESIDUOS', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Outorga de Agua: ${aq['outorga'] == true ? 'Sim (${aq['outorga_identificacao'] ?? "N/A"})' : 'Nao'}');
+      addLine('Descarte Residuos: ${descarte == 'OUTRO' ? aq['descarte_residuos_outro'] ?? 'Outro' : 'Composteira'}');
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Infracao Constatada: ${aq['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      addLine('Medida Sugerida DIFI: ${aq['medida_sugerida'] ?? 'Nenhuma'}');
+      addLine('Foto Geo OK: ${aq['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Parecer: ${aq['observacoes'] ?? 'Sem parecer'}');
+
+    } else if (tipo.contains('sucroalcooleiro') || tipo.contains('agroindustriais') || tipo.contains('agroindustrial') || data.containsKey('sucroalcooleiro')) {
       final su = data['sucroalcooleiro'] ?? data;
-      addLine('DADOS DE SUCROALCOOLEIRO', bold: true, align: PosAlign.center);
-      addLine('Residuos Solidos: ${su['residuos_solidos'] ?? 'N/A'}');
-      addLine('Destinacao Bagaco: ${su['bagaco'] ?? 'N/A'}');
-      addLine('Equip. Conformes: ${su['equipamentos_conformes'] != false ? 'Sim' : 'Nao'}');
-      addLine('Armazenamento OK: ${su['armazenamento_ok'] != false ? 'Sim' : 'Nao'}');
+      
+      addLine(separator, align: PosAlign.center);
+      addLine('ATIVIDADES AGROINDUSTRIAIS', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+
+      addLine('Materia-Prima local:');
+      addLine('${su['local_materia_prima'] ?? 'N/A'}');
+
+      addLine('Produz efluentes: ${su['produz_efluentes'] == true ? 'Sim' : 'Nao'}');
+      if (su['produz_efluentes'] == true) {
+        addLine('Efl. Coleta/Dest: ${su['efluentes_coleta_destinacao'] ?? 'N/A'}');
+      }
+
+      addLine('Produz res. solidos: ${su['produz_residuos'] == true ? 'Sim' : 'Nao'}');
+      if (su['produz_residuos'] == true) {
+        addLine('Res. Coleta/Dest: ${su['residuos_coleta_destinacao'] ?? 'N/A'}');
+      }
+
+      addLine('Gera/Utiliza bagaco: ${su['gera_utiliza_bagaco'] == true ? 'Sim' : 'Nao'}');
+      if (su['gera_utiliza_bagaco'] == true) {
+        addLine('Bagaco Arm/Dest: ${su['bagaco_armazenamento_destinacao'] ?? 'N/A'}');
+      }
+
+      addLine('Fontes termicas: ${su['fontes_termicas'] == true ? 'Sim' : 'Nao'}');
+      if (su['fontes_termicas'] == true) {
+        addLine('Qual fonte: ${su['fontes_termicas_quais'] ?? 'N/A'}');
+      }
+
+      addLine('Utiliza lenha: ${su['utiliza_lenha'] == true ? 'Sim' : 'Nao'}');
+      if (su['utiliza_lenha'] == true) {
+        addLine('Origem: ${su['lenha_nativa_exotica'] ?? 'N/A'}');
+        addLine('Lenha Armaz: ${su['lenha_local_armazenamento'] ?? 'N/A'}');
+      }
+
+      addLine('Tanques adequados: ${su['tanques_adequados'] == true ? 'Sim' : 'Nao'}');
+      addLine('Higienizacao e contr: ${su['higienizacao_controle_efluentes'] == true ? 'Sim' : 'Nao'}');
+      addLine('Fossa septica: ${su['fossa_septica'] == true ? 'Sim' : 'Nao'}');
+      addLine('Equipamentos conf: ${su['equipamentos_memorial'] == true || su['equipamentos_conformes'] == true ? 'Sim' : 'Nao'}');
+      addLine('Controle chamine: ${su['chamines_controle_emissoes'] == true ? 'Sim' : 'Nao'}');
+      
+      addLine('Sistema vinhaca: ${su['sistema_vinhaca'] == true ? 'Sim' : 'Nao'}');
+      if (su['sistema_vinhaca'] == true) {
+        addLine('Condicoes: ${su['vinhaca_condicoes'] ?? 'N/A'}');
+      }
+
+      addLine('Tanques impermeab: ${su['tanques_lagoas_impermeabilizadas'] == true ? 'Sim' : 'Nao'}');
+      addLine('Vazamentos/infilt: ${su['vazamentos_infiltracoes'] == true ? 'Sim' : 'Nao'}');
+      addLine('Destinacao efluente: ${su['efluentes_destinados_corretamente'] == true ? 'Sim' : 'Nao'}');
+      addLine('Gestao PGRS: ${su['gestao_residuos_pgrs'] == true ? 'Sim' : 'Nao'}');
+      
+      addLine('Area envase espec: ${su['area_especifica_envase'] == true ? 'Sim' : 'Nao'}');
+      if (su['area_especifica_envase'] == true) {
+        addLine('Condicoes envase: ${su['envase_condicoes'] ?? 'N/A'}');
+      }
+
+      addLine('Armazenamento OK: ${su['armazenamento_requisitos_ambientais'] == true || su['armazenamento_ok'] == true ? 'Sim' : 'Nao'}');
+      
+      addLine('Uso agrotoxicos: ${su['faz_uso_agrotoxicos'] == true ? 'Sim' : 'Nao'}');
+      if (su['faz_uso_agrotoxicos'] == true) {
+        addLine('Quais: ${su['agrotoxicos_quais'] ?? 'N/A'}');
+        addLine('Receituario: ${su['agrotoxicos_receituario'] == true ? 'Sim' : 'Nao'}');
+        addLine('Dest. Embalagens: ${su['agrotoxicos_embalagens_destinacao'] ?? 'N/A'}');
+      }
+
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Foto Geo OK: ${su['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Infracao Constatada: ${su['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      if (su['infracao_constatada'] == true) {
+        addLine('Medidas DIFI: ${su['infracao_sugestao_medidas'] ?? su['medida_sugerida'] ?? 'Nenhuma'}');
+      }
+      addLine('Parecer: ${su['observacoes_complementares'] ?? su['observacoes'] ?? 'Sem parecer'}');
 
     } else if (tipo.contains('agricultura') || data.containsKey('agricultura')) {
       final ag = data['agricultura'] ?? data;
-      addLine('DADOS DE AGRICULTURA', bold: true, align: PosAlign.center);
-      addLine('Cultivo: ${ag['cultivo'] ?? 'N/A'}');
-      addLine('Cursos Hidricos: ${ag['cursos_hidricos_entorno'] ?? 'N/A'}');
-      addLine('Agrotoxicos: ${ag['agrotoxicos'] ?? 'N/A'}');
+      
+      addLine(separator, align: PosAlign.center);
+      addLine('ATIVIDADES AGRICOLAS', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Cultivo: ${ag['atividade_agricola'] ?? ag['cultivo'] ?? 'N/A'}');
+      addLine('Irrigada: ${ag['atividade_irrigada'] == true ? 'Sim' : 'Nao'}');
+      if (ag['atividade_irrigada'] == true) {
+        addLine('Outorga: ${ag['irrigada_outorga'] ?? 'N/A'}');
+      }
+      addLine('Uso agrotoxicos: ${ag['faz_uso_agrotoxicos'] == true ? 'Sim' : 'Nao'}');
+      if (ag['faz_uso_agrotoxicos'] == true) {
+        addLine('Quais: ${ag['agrotoxicos_quais'] ?? ag['agrotoxicos'] ?? 'N/A'}');
+        addLine('Receituario: ${ag['agrotoxicos_receituario'] == true ? 'Sim' : 'Nao'}');
+        addLine('Dest. Embalagens: ${ag['agrotoxicos_embalagens_destinacao'] ?? 'N/A'}');
+      }
+      addLine('Corpo Hidrico Entorno: ${ag['tem_cursos_hidricos'] == true || ag['cursos_hidricos_entorno']?.toString()?.toLowerCase() == 'sim' ? 'Sim' : 'Nao'}');
+      
+      addLine(separator, align: PosAlign.center);
+      addLine('FISCALIZACAO & DIFI', bold: true, align: PosAlign.center);
+      addLine(separator, align: PosAlign.center);
+      addLine('Foto Geo OK: ${ag['foto_geo_ok'] == true ? 'Sim' : 'Nao'}');
+      addLine('Infracao Constatada: ${ag['infracao_constatada'] == true ? 'Sim' : 'Nao'}');
+      if (ag['infracao_constatada'] == true) {
+        addLine('Medidas DIFI: ${ag['infracao_sugestao_medidas'] ?? ag['medida_sugerida'] ?? 'Nenhuma'}');
+      }
+      addLine('Parecer: ${ag['observacoes_complementares'] ?? ag['observacoes'] ?? 'Sem parecer'}');
     }
 
     addLine(doubleSeparator, align: PosAlign.center);

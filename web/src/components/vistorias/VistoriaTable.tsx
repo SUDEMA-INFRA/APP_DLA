@@ -85,10 +85,10 @@ const VistoriaTable: React.FC<VistoriaTableProps> = React.memo(({
         </span>
       );
     }
-    if (lowerType.includes('sucroalcooleiro')) {
+    if (lowerType.includes('sucroalcooleiro') || lowerType.includes('agroindustriais') || lowerType.includes('agroindustrial')) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-semibold">
-          Sucroalcooleiro
+          Atividades Agroindustriais
         </span>
       );
     }

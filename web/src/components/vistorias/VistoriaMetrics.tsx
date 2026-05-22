@@ -40,7 +40,7 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
       else if (type.includes('suinocultura')) suinocultura++;
       else if (type.includes('bovinocultura')) bovinocultura++;
       else if (type.includes('aquicultura')) aquicultura++;
-      else if (type.includes('sucroalcooleiro')) sucroalcooleiro++;
+      else if (type.includes('sucroalcooleiro') || type.includes('agroindustriais') || type.includes('agroindustrial')) sucroalcooleiro++;
       else if (type.includes('agricultura')) agricultura++;
     });
 
@@ -142,16 +142,16 @@ const VistoriaMetrics: React.FC<VistoriaMetricsProps> = React.memo(({ vistorias,
         </div>
       </Card>
 
-      {/* Card: Sucroalcooleiro */}
+      {/* Card: Atividades Agroindustriais */}
       <Card className="relative overflow-hidden transition-all hover:shadow-md border-l-2 border-l-purple-500 p-3 flex flex-col justify-between bg-white dark:bg-slate-950">
         <div>
-          <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400">Usinas</CardDescription>
+          <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400">Agroindústria</CardDescription>
           <CardTitle className="text-xl font-black text-purple-700 dark:text-purple-400 mt-1">
             {loading ? <Skeleton className="h-7 w-12" /> : stats.sucroalcooleiro}
           </CardTitle>
         </div>
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-900">
-          <span className="text-[10px] text-muted-foreground">Usinas</span>
+          <span className="text-[10px] text-muted-foreground">Agroindústrias</span>
           <Factory className="w-4 h-4 text-purple-500 stroke-[2]" />
         </div>
       </Card>

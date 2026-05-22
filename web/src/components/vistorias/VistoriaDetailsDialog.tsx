@@ -104,10 +104,10 @@ const VistoriaDetailsDialog: React.FC<VistoriaDetailsDialogProps> = React.memo((
         </span>
       );
     }
-    if (lowerType.includes('sucroalcooleiro')) {
+    if (lowerType.includes('sucroalcooleiro') || lowerType.includes('agroindustriais') || lowerType.includes('agroindustrial')) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-semibold">
-          Sucroalcooleiro
+          Atividades Agroindustriais
         </span>
       );
     }
@@ -1254,68 +1254,329 @@ const VistoriaDetailsDialog: React.FC<VistoriaDetailsDialogProps> = React.memo((
                 })()}
 
                 {/* SUCROALCOOLEIRO UI */}
-                {selectedVistoria.data.sucroalcooleiro && (
-                  <div className="space-y-4 bg-purple-50/30 dark:bg-purple-950/10 p-4 rounded-lg border border-purple-100 dark:border-purple-950/30">
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div className="flex items-center gap-2">
-                        {selectedVistoria.data.sucroalcooleiro.equipamentos_conformes ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
-                        <span className="font-bold text-slate-800 dark:text-slate-200">Equipamentos Conformes</span>
+                {selectedVistoria.data.sucroalcooleiro && (() => {
+                  const suc = selectedVistoria.data.sucroalcooleiro;
+                  const eflOk = suc.produz_efluentes;
+                  const resOk = suc.produz_residuos;
+                  const bagOk = suc.gera_utiliza_bagaco;
+                  const termOk = suc.fontes_termicas;
+                  const lenOk = suc.utiliza_lenha;
+                  const vinOk = suc.sistema_vinhaca;
+                  const envOk = suc.area_especifica_envase;
+                  const agroOk = suc.faz_uso_agrotoxicos;
+
+                  return (
+                    <div className="space-y-6">
+                      
+                      {/* CARD 1: Matéria Prima e Fluxo de Efluentes/Resíduos */}
+                      <div className="bg-purple-50/20 dark:bg-purple-950/5 p-4 rounded-lg border border-purple-100/40 dark:border-purple-900/10 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                          <Droplets className="w-4 h-4 text-purple-650" />
+                          <span>1. Armazenamento e Geração de Resíduos / Efluentes</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 text-xs">
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">6.1 Local de armazenamento da matéria-prima</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">{suc.local_materia_prima || 'Não informado'}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                          {renderBoolField(suc.produz_efluentes, "6.2 Produz efluentes?")}
+                          {renderBoolField(suc.produz_residuos, "6.3 Produz resíduos sólidos?")}
+                        </div>
+                        
+                        {(eflOk || suc.efluentes_coleta_destinacao) && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Local de coleta e destinação dos efluentes</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.efluentes_coleta_destinacao || suc.residuos_solidos || 'Não informado'}</p>
+                          </div>
+                        )}
+
+                        {(resOk || suc.residuos_coleta_destinacao) && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Local de coleta e destinação dos resíduos sólidos</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.residuos_coleta_destinacao || suc.residuos_solidos || 'Não informado'}</p>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {selectedVistoria.data.sucroalcooleiro.armazenamento_ok ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
-                        <span className="font-bold text-slate-800 dark:text-slate-200">Armazenamento Correto</span>
+
+                      {/* CARD 2: Bagaço, Fontes Térmicas e Combustíveis */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-purple-650" />
+                          <span>2. Subprodutos e Matriz Energética</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {renderBoolField(suc.gera_utiliza_bagaco, "6.4 Gera/Utiliza bagaço?")}
+                          {renderBoolField(suc.fontes_termicas, "6.5 Existem fontes térmicas?")}
+                          {renderBoolField(suc.utiliza_lenha, "6.6 Utiliza lenha como combustível?")}
+                        </div>
+
+                        {bagOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Local de armazenamento e destinação do bagaço</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.bagaco_armazenamento_destinacao || suc.bagaco || 'Não informado'}</p>
+                          </div>
+                        )}
+
+                        {termOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Tipo/Qual de fonte térmica</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.fontes_termicas_quais || 'Não informado'}</p>
+                          </div>
+                        )}
+
+                        {lenOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Origem da lenha</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">{suc.lenha_nativa_exotica === 'NATIVA' ? 'Nativa' : suc.lenha_nativa_exotica === 'EXOTICA' ? 'Exótica' : 'Não informado'}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Local de armazenamento</span>
+                                <span className="font-semibold text-slate-800 dark:text-slate-200">{suc.lenha_local_armazenamento || 'Não informado'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
+
+                      {/* CARD 3: Adequação de Instalações e Equipamentos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-650 dark:text-purple-400 flex items-center gap-2">
+                          <Wrench className="w-4 h-4 text-purple-650" />
+                          <span>3. Integridade das Instalações e Equipamentos</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {renderBoolField(suc.tanques_adequados, "6.7 Tanques de armazenamento adequados/íntegros/identificados?")}
+                          {renderBoolField(suc.higienizacao_controle_efluentes, "6.8 Existe higienização e controle de efluentes da limpeza?")}
+                          {renderBoolField(suc.fossa_septica, "6.9 Existe fossa séptica?")}
+                          {renderBoolField(suc.equipamentos_memorial !== undefined ? suc.equipamentos_memorial : suc.equipamentos_conformes, "6.10 Equipamentos conformes com memorial descritivo?")}
+                          {renderBoolField(suc.chamines_controle_emissoes, "6.11 Chaminés possuem controle de emissões?")}
+                        </div>
+                      </div>
+
+                      {/* CARD 4: Vinhaça e Armazenamento Impermeabilizado */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                          <Waves className="w-4 h-4 text-purple-650" />
+                          <span>4. Gestão de Vinhaça e Estanqueidade</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {renderBoolField(suc.sistema_vinhaca, "6.12 Possui sistema de vinhaça?")}
+                          {renderBoolField(suc.tanques_lagoas_impermeabilizadas, "6.13 Possui Tanques/lagoas impermeabilizadas?")}
+                          {renderBoolField(suc.vazamentos_infiltracoes, "6.14 Existem vazamentos/infiltrações em tubulações/tanques?")}
+                          {renderBoolField(suc.efluentes_destinados_corretamente, "6.15 Os efluentes são destinados corretamente?")}
+                          {renderBoolField(suc.gestao_residuos_pgrs, "6.16 Há gestão dos resíduos sólidos conforme PGRS?")}
+                        </div>
+
+                        {vinOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Condições de coleta, transporte e armazenamento da vinhaça</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.vinhaca_condicoes || 'Não informado'}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CARD 5: Envase e Armazenamento Final */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-650 dark:text-purple-400 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-purple-650" />
+                          <span>5. Envase e Depósito de Produtos</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {renderBoolField(suc.area_especifica_envase, "6.17 Existe área específica para envase?")}
+                          {renderBoolField(suc.armazenamento_requisitos_ambientais !== undefined ? suc.armazenamento_requisitos_ambientais : suc.armazenamento_ok, "6.18 Local de armazenamento atende requisitos ambientais?")}
+                        </div>
+
+                        {envOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Condições da área de envase</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{suc.envase_condicoes || 'Não informado'}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CARD 6: Uso de Agrotóxicos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-purple-650 dark:text-purple-400 flex items-center gap-2">
+                          <Sprout className="w-4 h-4 text-purple-650" />
+                          <span>6. Uso e Controle de Defensivos / Agrotóxicos</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {renderBoolField(suc.faz_uso_agrotoxicos, "6.19 Faz uso de agrotóxicos?")}
+                          {suc.faz_uso_agrotoxicos && renderBoolField(
+                            suc.agrotoxicos_receituario === true || 
+                            suc.agrotoxicos_receituario === 'true' || 
+                            suc.agrotoxicos_receituario === 'Sim', 
+                            "Possui receituário agronômico?"
+                          )}
+                        </div>
+
+                        {agroOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2 space-y-2">
+                            <div>
+                              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Quais agrotóxicos utiliza</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{suc.agrotoxicos_quais || 'Não informado'}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Destinação das embalagens vazias</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{suc.agrotoxicos_embalagens_destinacao || 'Não informado'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CARD 7: Diagnóstico Administrativo e Fiscalização (DIFI) */}
+                      <div className="bg-rose-50/10 dark:bg-rose-950/5 p-4 rounded-lg border border-rose-100/40 dark:border-rose-955/10 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                          <ClipboardCheck className="w-4 h-4" />
+                          <span>7. Ritos Legais e Fiscalização (DIFI)</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                          {renderBoolField(suc.foto_geo_ok, "6.20 Registro fotográfico georreferenciado conforme rito?")}
+                          {renderBoolField(suc.infracao_constatada, "6.21 Houve constatação de infração?")}
+                        </div>
+                        {suc.infracao_constatada && (
+                          <div className="grid grid-cols-1 gap-2 text-xs border-t pt-3">
+                            <div>
+                              <span className="text-muted-foreground block font-semibold mb-1">Medidas sugeridas para adoção pela DIFI</span>
+                              <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 leading-relaxed font-semibold text-red-650 dark:text-red-400">
+                                {suc.infracao_sugestao_medidas || 'Nenhuma medida sugerida.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Parecer Técnico */}
+                      {(suc.observacoes_complementares || suc.observacoes) && (
+                        <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Informações Complementares e Parecer Técnico</span>
+                          <p className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 text-slate-700 dark:text-slate-350 leading-relaxed text-xs">
+                            {suc.observacoes_complementares || suc.observacoes}
+                          </p>
+                        </div>
+                      )}
+
                     </div>
-                    {selectedVistoria.data.sucroalcooleiro.residuos_solidos && (
-                      <div className="border-t pt-3 mt-3 text-xs">
-                        <span className="text-muted-foreground block">Destinação de Resíduos Sólidos</span>
-                        <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
-                          {selectedVistoria.data.sucroalcooleiro.residuos_solidos}
-                        </p>
-                      </div>
-                    )}
-                    {selectedVistoria.data.sucroalcooleiro.bagaco && (
-                      <div className="border-t pt-3 text-xs">
-                        <span className="text-muted-foreground block">Disposição do Bagaço</span>
-                        <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
-                          {selectedVistoria.data.sucroalcooleiro.bagaco}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* AGRICULTURA UI */}
-                {selectedVistoria.data.agricultura && (
-                  <div className="space-y-4 bg-lime-50/30 dark:bg-lime-950/10 p-4 rounded-lg border border-lime-100 dark:border-lime-950/30">
-                    <div className="grid grid-cols-1 gap-4 text-xs">
-                      {selectedVistoria.data.agricultura.cultivo && (
-                        <div>
-                          <span className="text-muted-foreground block font-semibold mb-1">Tipos de Cultivo</span>
-                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
-                            {selectedVistoria.data.agricultura.cultivo}
+                {selectedVistoria.data.agricultura && (() => {
+                  const agri = selectedVistoria.data.agricultura;
+                  const irrOk = agri.atividade_irrigada;
+                  const agroOk = agri.faz_uso_agrotoxicos;
+
+                  return (
+                    <div className="space-y-6">
+                      
+                      {/* CARD 1: Atividade Agrícola e Irrigação */}
+                      <div className="bg-lime-50/20 dark:bg-lime-950/5 p-4 rounded-lg border border-lime-100/40 dark:border-lime-900/10 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-lime-600 dark:text-lime-400 flex items-center gap-2">
+                          <Sprout className="w-4 h-4 text-lime-655" />
+                          <span>1. Identificação e Irrigação</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 text-xs">
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">7.1 Atividade agrícola cultivada</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">{agri.atividade_agricola || agri.cultivo || 'Não informado'}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 mt-2">
+                          {renderBoolField(agri.atividade_irrigada, "7.2 Atividade é Irrigada?")}
+                        </div>
+
+                        {irrOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-1">
+                            <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider mb-0.5">Outorga de água para irrigação</span>
+                            <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{agri.irrigada_outorga || 'Não informada ou Não se aplica'}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CARD 2: Uso de Agrotóxicos */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-lime-655 dark:text-lime-400 flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-lime-655" />
+                          <span>2. Uso e Gestão de Agrotóxicos</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {renderBoolField(agri.faz_uso_agrotoxicos, "7.3 Faz uso de agrotóxicos?")}
+                          {agri.faz_uso_agrotoxicos && renderBoolField(
+                            agri.agrotoxicos_receituario === true || 
+                            agri.agrotoxicos_receituario === 'true' || 
+                            agri.agrotoxicos_receituario === 'Sim', 
+                            "Possui receituário agronômico?"
+                          )}
+                        </div>
+
+                        {agroOk && (
+                          <div className="bg-white dark:bg-slate-950 p-2.5 rounded border border-slate-100 dark:border-slate-900 text-xs mt-2 space-y-2">
+                            <div>
+                              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Quais agrotóxicos utiliza</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{agri.agrotoxicos_quais || agri.agrotoxicos || 'Não informado'}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-[9px] uppercase font-bold tracking-wider">Destinação das embalagens vazias</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{agri.agrotoxicos_embalagens_destinacao || 'Não informado'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CARD 3: Recursos Hídricos e Entorno */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-lime-655 dark:text-lime-400 flex items-center gap-2">
+                          <Droplets className="w-4 h-4 text-lime-655" />
+                          <span>3. Recursos Hídricos e Entorno</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2">
+                          {renderBoolField(
+                            agri.tem_cursos_hidricos !== undefined ? agri.tem_cursos_hidricos : 
+                            (agri.cursos_hidricos_entorno === 'Sim' || agri.cursos_hidricos_entorno === 'true' || (agri.cursos_hidricos_entorno as any) === true), 
+                            "7.4 Existem cursos hídricos, nascentes ou reservatórios no entorno do cultivo?"
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CARD 4: Diagnóstico DIFI */}
+                      <div className="bg-rose-50/10 dark:bg-rose-950/5 p-4 rounded-lg border border-rose-100/40 dark:border-rose-955/10 space-y-3">
+                        <div className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                          <ClipboardCheck className="w-4 h-4" />
+                          <span>4. Ritos Legais e Fiscalização (DIFI)</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                          {renderBoolField(agri.foto_geo_ok, "7.5 Registro fotográfico georreferenciado conforme rito?")}
+                          {renderBoolField(agri.infracao_constatada, "7.6 Houve constatação de infração?")}
+                        </div>
+                        {agri.infracao_constatada && (
+                          <div className="grid grid-cols-1 gap-2 text-xs border-t pt-3">
+                            <div>
+                              <span className="text-muted-foreground block font-semibold mb-1">Medidas sugeridas para adoção pela DIFI</span>
+                              <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 leading-relaxed font-semibold text-red-655 dark:text-red-400">
+                                {agri.infracao_sugestao_medidas || 'Nenhuma medida sugerida.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Observações Técnicas */}
+                      {(agri.observacoes_complementares || agri.observacoes) && (
+                        <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-lg border border-slate-100 dark:border-slate-900 space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">Parecer Técnico / Informações Complementares</span>
+                          <p className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 text-slate-700 dark:text-slate-355 leading-relaxed text-xs">
+                            {agri.observacoes_complementares || agri.observacoes}
                           </p>
                         </div>
                       )}
-                      {selectedVistoria.data.agricultura.cursos_hidricos_entorno && (
-                        <div className="border-t pt-3">
-                          <span className="text-muted-foreground block font-semibold mb-1">Cursos Hídricos no Entorno</span>
-                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
-                            {selectedVistoria.data.agricultura.cursos_hidricos_entorno}
-                          </p>
-                        </div>
-                      )}
-                      {selectedVistoria.data.agricultura.agrotoxicos && (
-                        <div className="border-t pt-3">
-                          <span className="text-muted-foreground block font-semibold mb-1">Uso de Agrotóxicos</span>
-                          <p className="bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed">
-                            {selectedVistoria.data.agricultura.agrotoxicos}
-                          </p>
-                        </div>
-                      )}
+
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* FALLBACK GENERAL FORM INFO */}
                 {!selectedVistoria.data.supressao && 

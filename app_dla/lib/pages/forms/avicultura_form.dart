@@ -76,7 +76,7 @@ class _AviculturaFormState extends State<AviculturaForm> {
     super.initState();
     final d = widget.data;
 
-    _modelo = d['modelo']?.toString()?.toUpperCase();
+    _modelo = d['modelo']?.toString().toUpperCase();
     if (_modelo != 'CORTE' && _modelo != 'POSTURA') {
       _modelo = 'CORTE';
     }
@@ -375,216 +375,452 @@ class _AviculturaFormState extends State<AviculturaForm> {
               ),
               const Divider(height: 20, thickness: 1),
 
-              DropdownButtonFormField<String>(
-                value: _corteSistemaCriacao,
-                decoration: const InputDecoration(
-                  labelText: 'Sistema de Criação',
-                  border: OutlineInputBorder(),
-                  fillColor: Colors.white,
-                  filled: true,
-                ),
-                items: ['Intensivo (Confinado)', 'Semi-intensivo', 'Extensivo / Caipira']
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                    .toList(),
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _corteSistemaCriacao = val);
-                        _notifyChanges();
-                      },
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Sistema de Criação:',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: darkSlate),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.amber.shade100),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Intensivo', style: TextStyle(fontSize: 11))),
+                            selected: _corteSistemaCriacao == 'Intensivo (Confinado)',
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteSistemaCriacao == 'Intensivo (Confinado)' ? forestGreen : darkSlate,
+                              fontWeight: _corteSistemaCriacao == 'Intensivo (Confinado)' ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    if (selected) {
+                                      setState(() => _corteSistemaCriacao = 'Intensivo (Confinado)');
+                                      _notifyChanges();
+                                    }
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Semi-intensivo', style: TextStyle(fontSize: 11))),
+                            selected: _corteSistemaCriacao == 'Semi-intensivo',
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteSistemaCriacao == 'Semi-intensivo' ? forestGreen : darkSlate,
+                              fontWeight: _corteSistemaCriacao == 'Semi-intensivo' ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    if (selected) {
+                                      setState(() => _corteSistemaCriacao = 'Semi-intensivo');
+                                      _notifyChanges();
+                                    }
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Extensivo / Caipira', style: TextStyle(fontSize: 11))),
+                            selected: _corteSistemaCriacao == 'Extensivo / Caipira',
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteSistemaCriacao == 'Extensivo / Caipira' ? forestGreen : darkSlate,
+                              fontWeight: _corteSistemaCriacao == 'Extensivo / Caipira' ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    if (selected) {
+                                      setState(() => _corteSistemaCriacao = 'Extensivo / Caipira');
+                                      _notifyChanges();
+                                    }
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
               const Text(
-                'Características do Galpão (Selecione todos aplicáveis):',
+                'Características do Galpão:',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: darkSlate),
               ),
               const SizedBox(height: 8),
-
-              // Switch layout 1
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Aves soltas no chão', style: TextStyle(fontSize: 13)),
-                value: _corteAvesSoltasChao,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _corteAvesSoltasChao = val);
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Criação sobre cama (ex. casca de arroz/maravalha)', style: TextStyle(fontSize: 13)),
-                value: _corteCamaCascaArroz,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _corteCamaCascaArroz = val);
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dimensões: Galpões Longos (> 50m)', style: TextStyle(fontSize: 13)),
-                value: _corteGalpoesLongos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteGalpoesLongos = val;
-                          if (val) _corteGalpoesCurtos = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dimensões: Galpões Curtos (< 50m)', style: TextStyle(fontSize: 13)),
-                value: _corteGalpoesCurtos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteGalpoesCurtos = val;
-                          if (val) _corteGalpoesLongos = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Bebedouros no chão', style: TextStyle(fontSize: 13)),
-                value: _corteBebedourosChao,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteBebedourosChao = val;
-                          if (val) _corteBebedourosSuspensos = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Bebedouros suspensos / automáticos (Nipple)', style: TextStyle(fontSize: 13)),
-                value: _corteBebedourosSuspensos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteBebedourosSuspensos = val;
-                          if (val) _corteBebedourosChao = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Comedouros no chão', style: TextStyle(fontSize: 13)),
-                value: _corteComedourosChao,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteComedourosChao = val;
-                          if (val) _corteComedourosSuspensos = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Comedouros suspensos', style: TextStyle(fontSize: 13)),
-                value: _corteComedourosSuspensos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteComedourosSuspensos = val;
-                          if (val) _corteComedourosChao = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Fase Pintos (Alojamento Inicial)', style: TextStyle(fontSize: 13)),
-                value: _cortePintos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _cortePintos = val);
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Fase Frangos (Crescimento / Engorda)', style: TextStyle(fontSize: 13)),
-                value: _corteFrangos,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() => _corteFrangos = val);
-                        _notifyChanges();
-                      },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Possui ventiladores / exaustores internos', style: TextStyle(fontSize: 13)),
-                value: _corteVentiladores,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteVentiladores = val;
-                          if (val) _corteSemVentiladores = false;
-                        });
-                        _notifyChanges();
-                      },
-              ),
-              if (_corteVentiladores)
-                SwitchListTile(
-                  contentPadding: const EdgeInsets.only(left: 20),
-                  title: const Text('Equipamentos em pleno funcionamento', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  value: _corteVentiladoresFunc,
-                  activeColor: forestGreen,
-                  onChanged: widget.readOnly
-                      ? null
-                      : (val) {
-                          setState(() => _corteVentiladoresFunc = val);
-                          _notifyChanges();
-                        },
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade100),
                 ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Não possui ventiladores ou climatizadores', style: TextStyle(fontSize: 13)),
-                value: _corteSemVentiladores,
-                activeColor: forestGreen,
-                onChanged: widget.readOnly
-                    ? null
-                    : (val) {
-                        setState(() {
-                          _corteSemVentiladores = val;
-                          if (val) {
-                            _corteVentiladores = false;
-                            _corteVentiladoresFunc = false;
-                          }
-                        });
-                        _notifyChanges();
-                      },
+                child: Column(
+                  children: [
+                    // Row 1: Geral / Cama
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Aves Soltas no Chão', style: TextStyle(fontSize: 11))),
+                            selected: _corteAvesSoltasChao,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteAvesSoltasChao ? forestGreen : darkSlate,
+                              fontWeight: _corteAvesSoltasChao ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() => _corteAvesSoltasChao = selected);
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Criação sobre Cama', style: TextStyle(fontSize: 11))),
+                            selected: _corteCamaCascaArroz,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteCamaCascaArroz ? forestGreen : darkSlate,
+                              fontWeight: _corteCamaCascaArroz ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() => _corteCamaCascaArroz = selected);
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Row 2: Dimensões (Mutualmente Exclusivos)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Galpões Longos (> 50m)', style: TextStyle(fontSize: 11))),
+                            selected: _corteGalpoesLongos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteGalpoesLongos ? forestGreen : darkSlate,
+                              fontWeight: _corteGalpoesLongos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteGalpoesLongos = selected;
+                                      if (selected) _corteGalpoesCurtos = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Galpões Curtos (< 50m)', style: TextStyle(fontSize: 11))),
+                            selected: _corteGalpoesCurtos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteGalpoesCurtos ? forestGreen : darkSlate,
+                              fontWeight: _corteGalpoesCurtos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteGalpoesCurtos = selected;
+                                      if (selected) _corteGalpoesLongos = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Row 3: Bebedouros (Mutualmente Exclusivos)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Bebedouros no Chão', style: TextStyle(fontSize: 11))),
+                            selected: _corteBebedourosChao,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteBebedourosChao ? forestGreen : darkSlate,
+                              fontWeight: _corteBebedourosChao ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteBebedourosChao = selected;
+                                      if (selected) _corteBebedourosSuspensos = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Suspensos (Nipple)', style: TextStyle(fontSize: 11))),
+                            selected: _corteBebedourosSuspensos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteBebedourosSuspensos ? forestGreen : darkSlate,
+                              fontWeight: _corteBebedourosSuspensos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteBebedourosSuspensos = selected;
+                                      if (selected) _corteBebedourosChao = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Row 4: Comedouros (Mutualmente Exclusivos)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Comedouros no Chão', style: TextStyle(fontSize: 11))),
+                            selected: _corteComedourosChao,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteComedourosChao ? forestGreen : darkSlate,
+                              fontWeight: _corteComedourosChao ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteComedourosChao = selected;
+                                      if (selected) _corteComedourosSuspensos = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Comedouros Suspensos', style: TextStyle(fontSize: 11))),
+                            selected: _corteComedourosSuspensos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteComedourosSuspensos ? forestGreen : darkSlate,
+                              fontWeight: _corteComedourosSuspensos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteComedourosSuspensos = selected;
+                                      if (selected) _corteComedourosChao = false;
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Row 5: Fases
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Fase Pintos (Alojamento)', style: TextStyle(fontSize: 10))),
+                            selected: _cortePintos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 10,
+                              color: _cortePintos ? forestGreen : darkSlate,
+                              fontWeight: _cortePintos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() => _cortePintos = selected);
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Fase Frangos (Cresc.)', style: TextStyle(fontSize: 10))),
+                            selected: _corteFrangos,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 10,
+                              color: _corteFrangos ? forestGreen : darkSlate,
+                              fontWeight: _corteFrangos ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() => _corteFrangos = selected);
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Row 6: Climatização (Mutualmente Exclusivos)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Possui Ventiladores', style: TextStyle(fontSize: 11))),
+                            selected: _corteVentiladores,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              color: _corteVentiladores ? forestGreen : darkSlate,
+                              fontWeight: _corteVentiladores ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteVentiladores = selected;
+                                      if (selected) {
+                                        _corteSemVentiladores = false;
+                                      } else {
+                                        _corteVentiladoresFunc = false;
+                                      }
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: const Center(child: Text('Não Possui Ventiladores', style: TextStyle(fontSize: 10))),
+                            selected: _corteSemVentiladores,
+                            selectedColor: forestGreen.withOpacity(0.15),
+                            checkmarkColor: forestGreen,
+                            labelStyle: TextStyle(
+                              fontSize: 10,
+                              color: _corteSemVentiladores ? forestGreen : darkSlate,
+                              fontWeight: _corteSemVentiladores ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: widget.readOnly
+                                ? null
+                                : (selected) {
+                                    setState(() {
+                                      _corteSemVentiladores = selected;
+                                      if (selected) {
+                                        _corteVentiladores = false;
+                                        _corteVentiladoresFunc = false;
+                                      }
+                                    });
+                                    _notifyChanges();
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Sub-option nested under "Possui ventiladores"
+                    if (_corteVentiladores) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: ChoiceChip(
+                                label: const Center(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.bolt, size: 14, color: forestGreen),
+                                      SizedBox(width: 4),
+                                      Text('Equipamentos Funcionando', style: TextStyle(fontSize: 11)),
+                                    ],
+                                  ),
+                                ),
+                                selected: _corteVentiladoresFunc,
+                                selectedColor: forestGreen.withOpacity(0.15),
+                                checkmarkColor: forestGreen,
+                                labelStyle: TextStyle(
+                                  fontSize: 11,
+                                  color: _corteVentiladoresFunc ? forestGreen : darkSlate,
+                                  fontWeight: _corteVentiladoresFunc ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                onSelected: widget.readOnly
+                                    ? null
+                                    : (selected) {
+                                        setState(() => _corteVentiladoresFunc = selected);
+                                        _notifyChanges();
+                                      },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
 

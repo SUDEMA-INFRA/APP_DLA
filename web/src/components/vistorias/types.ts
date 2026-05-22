@@ -197,15 +197,67 @@ export interface VistoriaData {
       observacoes?: string;
     };
     sucroalcooleiro?: {
+      local_materia_prima?: string;
+      produz_efluentes?: boolean;
+      efluentes_coleta_destinacao?: string;
+      produz_residuos?: boolean;
+      residuos_coleta_destinacao?: string;
+      gera_utiliza_bagaco?: boolean;
+      bagaco_armazenamento_destinacao?: string;
+      fontes_termicas?: boolean;
+      fontes_termicas_quais?: string;
+      utiliza_lenha?: boolean;
+      lenha_nativa_exotica?: string;
+      lenha_local_armazenamento?: string;
+      tanques_adequados?: boolean;
+      higienizacao_controle_efluentes?: boolean;
+      fossa_septica?: boolean;
+      equipamentos_memorial?: boolean;
+      chamines_controle_emissoes?: boolean;
+      sistema_vinhaca?: boolean;
+      vinhaca_condicoes?: string;
+      tanques_lagoas_impermeabilizadas?: boolean;
+      vazamentos_infiltracoes?: boolean;
+      efluentes_destinados_corretamente?: boolean;
+      gestao_residuos_pgrs?: boolean;
+      area_especifica_envase?: boolean;
+      envase_condicoes?: string;
+      armazenamento_requisitos_ambientais?: boolean;
+      faz_uso_agrotoxicos?: boolean;
+      agrotoxicos_quais?: string;
+      agrotoxicos_receituario?: boolean | string;
+      agrotoxicos_embalagens_destinacao?: string;
+      foto_geo_ok?: boolean;
+      infracao_constatada?: boolean;
+      infracao_sugestao_medidas?: string;
+      observacoes_complementares?: string;
+
+      // Legacy fields
       residuos_solidos?: string;
       bagaco?: string;
       equipamentos_conformes?: boolean;
       armazenamento_ok?: boolean;
+      observacoes?: string;
     };
     agricultura?: {
+      atividade_agricola?: string;
+      atividade_irrigada?: boolean;
+      irrigada_outorga?: string;
+      faz_uso_agrotoxicos?: boolean;
+      agrotoxicos_quais?: string;
+      agrotoxicos_receituario?: boolean | string;
+      agrotoxicos_embalagens_destinacao?: string;
+      tem_cursos_hidricos?: boolean;
+      foto_geo_ok?: boolean;
+      infracao_constatada?: boolean;
+      infracao_sugestao_medidas?: string;
+      observacoes_complementares?: string;
+
+      // Legacy fields
       cultivo?: string;
       cursos_hidricos_entorno?: string;
       agrotoxicos?: string;
+      observacoes?: string;
     };
   };
   created_at?: string;
@@ -215,13 +267,16 @@ export interface VistoriaData {
 
 // Helper to determine the actual type of a vistoria
 export const getVistoriaType = (v: VistoriaData) => {
-  if (v.data.tipo) return v.data.tipo;
+  if (v.data.tipo) {
+    if (v.data.tipo === 'Sucroalcooleiro') return 'Atividades Agroindustriais';
+    return v.data.tipo;
+  }
   if (v.data.supressao) return 'Supressão Vegetal';
   if (v.data.avicultura) return 'Avicultura';
   if (v.data.suinocultura) return 'Suinocultura';
   if (v.data.bovinocultura) return 'Bovinocultura';
   if (v.data.aquicultura) return 'Aquicultura';
-  if (v.data.sucroalcooleiro) return 'Sucroalcooleiro';
+  if (v.data.sucroalcooleiro) return 'Atividades Agroindustriais';
   if (v.data.agricultura) return 'Agricultura';
   return 'Geral';
 };

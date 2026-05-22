@@ -9,7 +9,7 @@ import 'forms/avicultura_form.dart';
 import 'forms/suinocultura_form.dart';
 import 'forms/bovinocultura_form.dart';
 import 'forms/aquicultura_form.dart';
-import 'forms/sucroalcooleiro_form.dart';
+import 'forms/atividades_agroindustriais_form.dart';
 import 'forms/agricultura_form.dart';
 
 class ProcessoInputFormatter extends TextInputFormatter {
@@ -248,16 +248,19 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
   bool _aquiculturaMedidaAuto = false;
   final _aquiculturaObservacoesController = TextEditingController();
 
-  // Sucroalcooleiro Controllers
-  final _sucroalcooleiroResiduosController = TextEditingController();
-  final _sucroalcooleiroBagacoController = TextEditingController();
-  bool _sucroalcooleiroEquipamentosConformes = true;
-  bool _sucroalcooleiroArmazenamentoOk = true;
+  // Atividades Agroindustriais Controllers
+  final _atividadesAgroindustriaisResiduosController = TextEditingController();
+  final _atividadesAgroindustriaisBagacoController = TextEditingController();
+  bool _atividadesAgroindustriaisEquipamentosConformes = true;
+  bool _atividadesAgroindustriaisArmazenamentoOk = true;
 
   // Agricultura Controllers
   final _agriculturaCultivoController = TextEditingController();
   final _agriculturaCursosHidricosController = TextEditingController();
   final _agriculturaAgrotoxicosController = TextEditingController();
+
+  Map<String, dynamic> _atividadesAgroindustriaisData = {};
+  Map<String, dynamic> _agriculturaData = {};
 
   bool _isGpsLoading = false;
 
@@ -267,7 +270,7 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
     'Suinocultura',
     'Bovinocultura',
     'Aquicultura',
-    'Sucroalcooleiro',
+    'Atividades Agroindustriais',
     'Agricultura',
   ];
 
@@ -502,14 +505,16 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       _aquiculturaMedidaAuto = sugeridas.contains('Auto de Infração');
       
       _aquiculturaObservacoesController.text = aq['observacoes']?.toString() ?? '';
-    } else if (_selectedTipo == 'Sucroalcooleiro' || d.containsKey('sucroalcooleiro')) {
+    } else if (_selectedTipo == 'Atividades Agroindustriais' || d.containsKey('sucroalcooleiro')) {
       final su = d['sucroalcooleiro'] ?? d;
-      _sucroalcooleiroResiduosController.text = su['residuos_solidos']?.toString() ?? '';
-      _sucroalcooleiroBagacoController.text = su['bagaco']?.toString() ?? '';
-      _sucroalcooleiroEquipamentosConformes = su['equipamentos_conformes'] != false;
-      _sucroalcooleiroArmazenamentoOk = su['armazenamento_ok'] != false;
+      _atividadesAgroindustriaisData = Map<String, dynamic>.from(su);
+      _atividadesAgroindustriaisResiduosController.text = su['residuos_solidos']?.toString() ?? '';
+      _atividadesAgroindustriaisBagacoController.text = su['bagaco']?.toString() ?? '';
+      _atividadesAgroindustriaisEquipamentosConformes = su['equipamentos_conformes'] != false;
+      _atividadesAgroindustriaisArmazenamentoOk = su['armazenamento_ok'] != false;
     } else if (_selectedTipo == 'Agricultura' || d.containsKey('agricultura')) {
       final ag = d['agricultura'] ?? d;
+      _agriculturaData = Map<String, dynamic>.from(ag);
       _agriculturaCultivoController.text = ag['cultivo']?.toString() ?? '';
       _agriculturaCursosHidricosController.text = ag['cursos_hidricos_entorno']?.toString() ?? '';
       _agriculturaAgrotoxicosController.text = ag['agrotoxicos']?.toString() ?? '';
@@ -769,15 +774,17 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
         'medida_sugerida': medidas.join(', '),
         'observacoes': _aquiculturaObservacoesController.text.trim(),
       };
-    } else if (_selectedTipo == 'Sucroalcooleiro') {
+    } else if (_selectedTipo == 'Atividades Agroindustriais') {
       payload['sucroalcooleiro'] = {
-        'residuos_solidos': _sucroalcooleiroResiduosController.text.trim(),
-        'bagaco': _sucroalcooleiroBagacoController.text.trim(),
-        'equipamentos_conformes': _sucroalcooleiroEquipamentosConformes,
-        'armazenamento_ok': _sucroalcooleiroArmazenamentoOk,
+        ..._atividadesAgroindustriaisData,
+        'residuos_solidos': _atividadesAgroindustriaisResiduosController.text.trim(),
+        'bagaco': _atividadesAgroindustriaisBagacoController.text.trim(),
+        'equipamentos_conformes': _atividadesAgroindustriaisEquipamentosConformes,
+        'armazenamento_ok': _atividadesAgroindustriaisArmazenamentoOk,
       };
     } else if (_selectedTipo == 'Agricultura') {
       payload['agricultura'] = {
+        ..._agriculturaData,
         'cultivo': _agriculturaCultivoController.text.trim(),
         'cursos_hidricos_entorno': _agriculturaCursosHidricosController.text.trim(),
         'agrotoxicos': _agriculturaAgrotoxicosController.text.trim(),
@@ -1590,28 +1597,31 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
           });
         },
       );
-    } else if (_selectedTipo == 'Sucroalcooleiro') {
+    } else if (_selectedTipo == 'Atividades Agroindustriais') {
       final Map<String, dynamic> data = {
-        'residuos_solidos': _sucroalcooleiroResiduosController.text,
-        'bagaco': _sucroalcooleiroBagacoController.text,
-        'equipamentos_conformes': _sucroalcooleiroEquipamentosConformes,
-        'armazenamento_ok': _sucroalcooleiroArmazenamentoOk,
+        ..._atividadesAgroindustriaisData,
+        'residuos_solidos': _atividadesAgroindustriaisResiduosController.text,
+        'bagaco': _atividadesAgroindustriaisBagacoController.text,
+        'equipamentos_conformes': _atividadesAgroindustriaisEquipamentosConformes,
+        'armazenamento_ok': _atividadesAgroindustriaisArmazenamentoOk,
       };
 
-      return SucroalcooleiroForm(
+      return AtividadesAgroindustriaisForm(
         data: data,
         readOnly: false,
         onChanged: (map) {
           setState(() {
-            _sucroalcooleiroResiduosController.text = map['residuos_solidos']?.toString() ?? '';
-            _sucroalcooleiroBagacoController.text = map['bagaco']?.toString() ?? '';
-            _sucroalcooleiroEquipamentosConformes = map['equipamentos_conformes'] == true;
-            _sucroalcooleiroArmazenamentoOk = map['armazenamento_ok'] == true;
+            _atividadesAgroindustriaisData = map;
+            _atividadesAgroindustriaisResiduosController.text = map['residuos_solidos']?.toString() ?? '';
+            _atividadesAgroindustriaisBagacoController.text = map['bagaco']?.toString() ?? '';
+            _atividadesAgroindustriaisEquipamentosConformes = map['equipamentos_conformes'] == true;
+            _atividadesAgroindustriaisArmazenamentoOk = map['armazenamento_ok'] == true;
           });
         },
       );
     } else if (_selectedTipo == 'Agricultura') {
       final Map<String, dynamic> data = {
+        ..._agriculturaData,
         'cultivo': _agriculturaCultivoController.text,
         'cursos_hidricos_entorno': _agriculturaCursosHidricosController.text,
         'agrotoxicos': _agriculturaAgrotoxicosController.text,
@@ -1622,6 +1632,7 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
         readOnly: false,
         onChanged: (map) {
           setState(() {
+            _agriculturaData = map;
             _agriculturaCultivoController.text = map['cultivo']?.toString() ?? '';
             _agriculturaCursosHidricosController.text = map['cursos_hidricos_entorno']?.toString() ?? '';
             _agriculturaAgrotoxicosController.text = map['agrotoxicos']?.toString() ?? '';
@@ -1721,8 +1732,8 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
     _aquiculturaDescarteResiduosOutroController.dispose();
     _aquiculturaFonteAguaController.dispose();
     _aquiculturaObservacoesController.dispose();
-    _sucroalcooleiroResiduosController.dispose();
-    _sucroalcooleiroBagacoController.dispose();
+    _atividadesAgroindustriaisResiduosController.dispose();
+    _atividadesAgroindustriaisBagacoController.dispose();
     _agriculturaCultivoController.dispose();
     _agriculturaCursosHidricosController.dispose();
     _agriculturaAgrotoxicosController.dispose();
