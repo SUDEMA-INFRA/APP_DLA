@@ -34,50 +34,6 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
     return Municipios.getName(id);
   }
 
-  Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Excluir Relatório?'),
-          ],
-        ),
-        content: const Text(
-          'Esta ação removerá esta vistoria localmente do seu celular. Esta exclusão não pode ser desfeita.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      final service = VistoriaService();
-      await service.deleteLocalVistoria(_currentVistoria.id!);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Vistoria excluída localmente! 🗑️'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-        Navigator.pop(context, true); // Retorna true para a listagem recarregar!
-      }
-    }
-  }
-
   Future<void> _printComprovante(BuildContext context) async {
     // Abre a pré-visualização e espera confirmação
     final shouldPrint = await PrintPreviewDialog.show(context, _currentVistoria);
@@ -85,11 +41,13 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
     if (shouldPrint != true || !mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Conectando à impressora térmica...'), duration: Duration(seconds: 2)),
+      const SnackBar(
+        content: Text('Conectando à impressora térmica... 🖨️'),
+        duration: Duration(seconds: 2),
+      ),
     );
 
-    final printService = PrintService.instance;
-    final success = await printService.printVistoria(_currentVistoria);
+    final success = await PrintService.instance.printVistoria(_currentVistoria);
 
     if (mounted) {
       if (success) {
@@ -158,12 +116,6 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
             icon: const Icon(Icons.print),
             tooltip: 'Imprimir Comprovante',
             onPressed: () => _printComprovante(context),
-          ),
-          // Permite deletar localmente qualquer vistoria
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Deletar Localmente',
-            onPressed: () => _confirmDelete(context),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import '../services/vistoria_service.dart';
 import '../services/print_service.dart';
 
@@ -27,8 +28,8 @@ class PrintPreviewDialog extends StatelessWidget {
   }
 
   /// Chars por linha na impressora 58mm
-  static const int _charsPerLineSize1 = 32;
-  static const int _charsPerLineSize2 = 16;
+  static const int _charsPerLineSize1 = 42; // Font B compact (42 colunas)
+  static const int _charsPerLineSize2 = 21; // Font B compact double-width (21 colunas)
 
   /// Padding interno do "papel"
   static const double _paperHPadding = 6.0;
@@ -48,7 +49,7 @@ class PrintPreviewDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final printService = PrintService.instance;
-    final lines = printService.generatePreviewLines(vistoria);
+    final lines = printService.buildReceiptLines(vistoria);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -202,66 +203,40 @@ class PrintPreviewDialog extends StatelessWidget {
 
   /// Constrói todas as linhas do ticket com pré-quebra nos limites da impressora.
   List<Widget> _buildAllLines(
-    List<Map<String, dynamic>> lines,
+    List<ReceiptLine> lines,
     double baseFontSize,
     double doubleWidthFontSize,
   ) {
     final widgets = <Widget>[];
 
     for (final line in lines) {
-      final text = line['text'] as String;
-      final bold = line['bold'] as bool;
-      final center = line['center'] as bool;
-      final size = line['size'] as String;
+      final text = line.text;
+      final bold = line.bold;
+      final align = line.align;
+      final doubleSize = line.doubleSize;
 
       // Determina chars por linha e fontSize conforme o mapeamento ESC/POS
-      int maxChars;
-      double fontSize;
-      double lineHeight;
+      double fontSize = doubleSize ? doubleWidthFontSize : baseFontSize;
+      double lineHeight = doubleSize ? 1.4 : 1.2;
 
-      switch (size) {
-        case 'title':
-          // w=size1 (32 chars), h=size2 (dobro altura)
-          maxChars = _charsPerLineSize1;
-          fontSize = baseFontSize;
-          lineHeight = 2.2;
-          break;
-        case 'normal':
-          // w=size2 (16 chars, dobro largura), h=size1
-          maxChars = _charsPerLineSize2;
-          fontSize = doubleWidthFontSize;
-          lineHeight = 1.3;
-          break;
-        case 'small':
-        default:
-          // w=size1 (32 chars), h=size1
-          maxChars = _charsPerLineSize1;
-          fontSize = baseFontSize;
-          lineHeight = 1.3;
-          break;
-      }
-
-      // Pré-quebra o texto nos mesmos pontos que a impressora
-      final wrappedLines = _wrapText(text, maxChars);
-
-      for (final wrappedLine in wrappedLines) {
-        widgets.add(
-          Text(
-            wrappedLine,
-            textAlign: center ? TextAlign.center : TextAlign.left,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: fontSize,
-              fontWeight: bold ? FontWeight.w900 : FontWeight.normal,
-              color: const Color(0xFF1a1a1a),
-              height: lineHeight,
-              letterSpacing: 0,
-            ),
+      widgets.add(
+        Text(
+          text,
+          textAlign: align == PosAlign.center
+              ? TextAlign.center
+              : (align == PosAlign.right ? TextAlign.right : TextAlign.left),
+          maxLines: 1,
+          overflow: TextOverflow.clip,
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: fontSize,
+            fontWeight: bold ? FontWeight.w900 : FontWeight.normal,
+            color: const Color(0xFF1a1a1a),
+            height: lineHeight,
+            letterSpacing: 0,
           ),
-        );
-      }
+        ),
+      );
     }
 
     return widgets;
