@@ -3,7 +3,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Importação do cofre
 import 'package:app_dla/pages/login.page.dart';
 import 'package:app_dla/pages/offline_selection.page.dart';
-import 'package:app_dla/pages/pin_setup.page.dart';
 import 'package:app_dla/pages/vistoria_form_page.dart';
 import 'package:app_dla/pages/vistoria_detail_page.dart';
 import 'package:app_dla/services/database_helper.dart';
@@ -242,28 +241,57 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _printUnsynced(List<Vistoria> list) async {
     if (list.isEmpty) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Conectando à impressora térmica...'), duration: Duration(seconds: 1)),
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.print_outlined, color: Color(0xFF006b33)),
+              SizedBox(width: 8),
+              Text('Imprimir Lote'),
+            ],
+          ),
+          content: Text('Você tem ${list.length} vistorias pendentes locais. Deseja imprimi-las agora?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006b33), foregroundColor: Colors.white),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Confirmar', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
     );
 
-    final printService = PrintService.instance;
-    final int printed = await printService.printMultipleVistorias(list);
+    if (confirmed == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conectando à impressora térmica...'), duration: Duration(seconds: 1)),
+      );
 
-    if (mounted) {
-      if (printed > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$printed vistorias impressas com sucesso! 🖨️'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao imprimir. Verifique se a impressora está ativa.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      final printService = PrintService.instance;
+      final int printed = await printService.printMultipleVistorias(list);
+
+      if (mounted) {
+        if (printed > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$printed vistorias impressas com sucesso! 🖨️'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao imprimir. Verifique se a impressora está ativa.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

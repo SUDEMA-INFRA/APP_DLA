@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/vistoria_service.dart';
 import 'vistoria_form_page.dart';
 import '../utils/municipios.dart';
-import '../services/print_service.dart';
+import 'print_preview_dialog.dart';
 
 class VistoriaDetailPage extends StatefulWidget {
   final Vistoria vistoria;
@@ -78,30 +78,11 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
   }
 
   Future<void> _printComprovante(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Conectando à impressora térmica...'), duration: Duration(seconds: 1)),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PrintPreviewDialog(vistoria: _currentVistoria),
     );
-
-    final printService = PrintService.instance;
-    final success = await printService.printVistoria(_currentVistoria);
-
-    if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Comprovante impresso com sucesso! 🖨️'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao imprimir. Verifique a impressora.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   @override

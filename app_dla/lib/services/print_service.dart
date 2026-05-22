@@ -1,9 +1,24 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:intl/intl.dart';
 import 'vistoria_service.dart';
+
+class ReceiptLine {
+  final String text;
+  final PosAlign align;
+  final bool bold;
+  final bool doubleSize;
+
+  const ReceiptLine(
+    this.text, {
+    this.align = PosAlign.left,
+    this.bold = false,
+    this.doubleSize = false,
+  });
+}
 
 class PrintService {
   static final PrintService instance = PrintService._init();
@@ -60,6 +75,192 @@ class PrintService {
     return await PrintBluetoothThermal.disconnect;
   }
 
+  // Quebra de texto simples mantendo palavras quando possível
+  static List<String> wrapText(String text, int width) {
+    if (text.isEmpty) return [''];
+    if (text.length <= width) return [text];
+    List<String> result = [];
+    int start = 0;
+    while (start < text.length) {
+      int end = start + width;
+      if (end >= text.length) {
+        result.add(text.substring(start));
+        break;
+      }
+      int space = text.lastIndexOf(' ', end);
+      if (space > start) {
+        result.add(text.substring(start, space));
+        start = space + 1;
+      } else {
+        result.add(text.substring(start, end));
+        start = end;
+      }
+    }
+    return result;
+  }
+
+  // Monta a estrutura de linhas do recibo (usada tanto no app quanto na impressora)
+  List<ReceiptLine> buildReceiptLines(Vistoria vistoria) {
+    final List<ReceiptLine> lines = [];
+    const int cols = 42;
+    final String separator = '-' * cols;
+    final String doubleSeparator = '=' * cols;
+
+    void addLine(String text, {PosAlign align = PosAlign.left, bool bold = false, bool doubleSize = false}) {
+      final int limit = doubleSize ? 21 : 42;
+      final wrapped = wrapText(text, limit);
+      for (var chunk in wrapped) {
+        lines.add(ReceiptLine(chunk, align: align, bold: bold, doubleSize: doubleSize));
+      }
+    }
+
+    // Cabeçalho
+    addLine('SUDEMA', align: PosAlign.center, bold: true);
+    addLine('Sup. de Administracao do Meio Ambiente', align: PosAlign.center);
+    addLine(doubleSeparator, align: PosAlign.center);
+    addLine('COMPROVANTE DE VISTORIA', align: PosAlign.center, bold: true);
+    
+    if (!vistoria.synced) {
+      addLine('* NAO SINCRONIZADO *', align: PosAlign.center, bold: true);
+    }
+    addLine(doubleSeparator, align: PosAlign.center);
+
+    // Dados Gerais
+    final Map<String, dynamic> data = vistoria.data;
+    final dateFormat = DateFormat('dd/MM/yyyy HH:mm:ss');
+    final dateStr = dateFormat.format(vistoria.createdAt);
+
+    addLine('Processo: ${data['processo_n'] ?? 'N/A'}', bold: true);
+    addLine('Requerente: ${data['requerente'] ?? 'N/A'}');
+    addLine('Tipo: ${data['tipo'] ?? 'N/A'}');
+    addLine('Data: $dateStr');
+    addLine('Lat: ${data['latitude'] ?? 'N/A'}');
+    addLine('Long: ${data['longitude'] ?? 'N/A'}');
+    addLine(separator, align: PosAlign.center);
+
+    // Dados Específicos dependendo do tipo de vistoria
+    final tipo = (data['tipo']?.toString() ?? '').toLowerCase();
+
+    if (tipo.contains('supress') || tipo.contains('ambiental') || data.containsKey('supressao')) {
+      final s = data['supressao'] ?? data;
+      addLine('DADOS DE SUPRESSAO VEGETAL', bold: true, align: PosAlign.center);
+      addLine('Curso d\'agua: ${s['tem_curso_dagua'] == true ? 'Sim' : 'Nao'}');
+      addLine('APP Preservada: ${s['app_preservada'] == true ? 'Sim' : 'Nao'}');
+      addLine('Bioma: ${s['bioma'] ?? 'N/A'}');
+      addLine('Obs: ${s['observacoes'] ?? 'Nao informado'}');
+
+    } else if (tipo.contains('avicultura') || data.containsKey('avicultura')) {
+      final a = data['avicultura'] ?? data;
+      addLine('DADOS DE AVICULTURA', bold: true, align: PosAlign.center);
+      addLine('Modelo: ${a['modelo'] ?? 'N/A'}');
+      addLine('Criacao: ${a['tipo_criacao'] ?? 'N/A'}');
+      addLine('Galpoes: ${a['qtd_galpoes'] ?? 'N/A'}');
+      addLine('Animais: ${a['qtd_animais'] ?? 'N/A'}');
+
+    } else if (tipo.contains('suinocultura') || data.containsKey('suinocultura')) {
+      final s = data['suinocultura'] ?? data;
+      addLine('DADOS DE SUINOCULTURA', bold: true, align: PosAlign.center);
+      addLine('Galpoes: ${s['qtd_galpoes'] ?? 'N/A'}');
+      addLine('Animais: ${s['qtd_animais'] ?? 'N/A'}');
+      addLine('Fase Prod.: ${s['fase_producao'] ?? 'N/A'}');
+
+    } else if (tipo.contains('bovinocultura') || data.containsKey('bovinocultura')) {
+      final b = data['bovinocultura'] ?? data;
+      addLine('DADOS DE BOVINOCULTURA', bold: true, align: PosAlign.center);
+      addLine('Modelo: ${b['modelo'] ?? 'N/A'}');
+      addLine('Area (Ha): ${b['area_ha'] ?? 'N/A'}');
+      addLine('Dessedentacao: ${b['dessedentacao'] ?? 'N/A'}');
+
+    } else if (tipo.contains('aquicultura') || data.containsKey('aquicultura')) {
+      final aq = data['aquicultura'] ?? data;
+      addLine('DADOS DE AQUICULTURA', bold: true, align: PosAlign.center);
+      addLine('Tanques: ${aq['qtd_tanques'] ?? 'N/A'}');
+      addLine('Hidrometro: ${aq['hidrometro'] == true ? 'Sim' : 'Nao'}');
+      addLine('Outorga: ${aq['outorga'] == true ? 'Sim' : 'Nao'}');
+      addLine('Fonte de Agua: ${aq['fonte_agua'] ?? 'N/A'}');
+
+    } else if (tipo.contains('sucroalcooleiro') || data.containsKey('sucroalcooleiro')) {
+      final su = data['sucroalcooleiro'] ?? data;
+      addLine('DADOS DE SUCROALCOOLEIRO', bold: true, align: PosAlign.center);
+      addLine('Residuos Solidos: ${su['residuos_solidos'] ?? 'N/A'}');
+      addLine('Destinacao Bagaco: ${su['bagaco'] ?? 'N/A'}');
+      addLine('Equip. Conformes: ${su['equipamentos_conformes'] != false ? 'Sim' : 'Nao'}');
+      addLine('Armazenamento OK: ${su['armazenamento_ok'] != false ? 'Sim' : 'Nao'}');
+
+    } else if (tipo.contains('agricultura') || data.containsKey('agricultura')) {
+      final ag = data['agricultura'] ?? data;
+      addLine('DADOS DE AGRICULTURA', bold: true, align: PosAlign.center);
+      addLine('Cultivo: ${ag['cultivo'] ?? 'N/A'}');
+      addLine('Cursos Hidricos: ${ag['cursos_hidricos_entorno'] ?? 'N/A'}');
+      addLine('Agrotoxicos: ${ag['agrotoxicos'] ?? 'N/A'}');
+    }
+
+    addLine(doubleSeparator, align: PosAlign.center);
+
+    // Rodapé
+    addLine('ID Local: ${vistoria.localId}', align: PosAlign.center);
+    addLine('Impresso em:', align: PosAlign.center);
+    addLine(dateFormat.format(DateTime.now()), align: PosAlign.center);
+
+    return lines;
+  }
+
+  // Gera os bytes ESC/POS brutos a partir das ReceiptLine
+  List<int> buildReceiptBytes(Vistoria vistoria) {
+    List<int> bytes = [];
+
+    // Inicialização da impressora (Zera configurações anteriores)
+    bytes += [27, 64]; // ESC @
+    // Configura a impressora para usar a Fonte B (Fonte compacta/tamanho menor 9x17)
+    bytes += [27, 77, 1]; // ESC M 1
+
+    final lines = buildReceiptLines(vistoria);
+
+    for (var line in lines) {
+      // 1. Alinhamento
+      switch (line.align) {
+        case PosAlign.center:
+          bytes += [27, 97, 1]; // ESC a 1
+          break;
+        case PosAlign.right:
+          bytes += [27, 97, 2]; // ESC a 2
+          break;
+        default:
+          bytes += [27, 97, 0]; // ESC a 0
+          break;
+      }
+
+      // 2. Negrito
+      if (line.bold) {
+        bytes += [27, 69, 1]; // ESC E 1
+      } else {
+        bytes += [27, 69, 0]; // ESC E 0
+      }
+
+      // 3. Tamanho da Fonte (GS ! n)
+      if (line.doubleSize) {
+        bytes += [29, 33, 17]; // GS ! 17 (Double size, width + height)
+      } else {
+        bytes += [29, 33, 0];  // GS ! 0 (Tamanho Normal)
+      }
+
+      // 4. Texto em Latin1 (CP1252/ISO-8859-1 para compatibilidade de acentuação)
+      bytes += latin1.encode(line.text);
+      bytes += [10]; // LF (Line Feed)
+    }
+
+    // Reseta configurações para o padrão
+    bytes += [27, 97, 0]; // ESC a 0 (Esquerda)
+    bytes += [27, 69, 0]; // ESC E 0 (Negrito OFF)
+    bytes += [27, 77, 0]; // ESC M 0 (Fonte A)
+    bytes += [29, 33, 0];  // GS ! 0 (Tamanho Normal)
+
+    // Avanço de papel (Feed 3 linhas)
+    bytes += [27, 100, 3]; // ESC d 3
+
+    return bytes;
+  }
+
   // Imprime uma vistoria formatada
   Future<bool> printVistoria(Vistoria vistoria) async {
     try {
@@ -70,91 +271,9 @@ class PrintService {
         return false;
       }
 
-      final profile = await CapabilityProfile.load();
-      final generator = Generator(PaperSize.mm58, profile);
-      List<int> bytes = [];
+      final bytes = buildReceiptBytes(vistoria);
 
-      // Cabeçalho do Ticket
-      bytes += generator.text('SUDEMA',
-          styles: const PosStyles(align: PosAlign.center, bold: true, width: PosTextSize.size2, height: PosTextSize.size2));
-      bytes += generator.text('Sup. de Administracao do Meio Ambiente',
-          styles: const PosStyles(align: PosAlign.center, codeTable: 'CP1252'));
-      bytes += generator.text('--------------------------------',
-          styles: const PosStyles(align: PosAlign.center));
-      bytes += generator.text('COMPROVANTE DE VISTORIA',
-          styles: const PosStyles(align: PosAlign.center, bold: true));
-      
-      if (!vistoria.synced) {
-        bytes += generator.text('* NAO SINCRONIZADO *',
-            styles: const PosStyles(align: PosAlign.center, bold: true));
-      }
-      bytes += generator.text('--------------------------------',
-          styles: const PosStyles(align: PosAlign.center));
-
-      // Dados Gerais
-      final Map<String, dynamic> data = vistoria.data;
-      final dateFormat = DateFormat('dd/MM/yyyy HH:mm:ss');
-      final dateStr = dateFormat.format(vistoria.createdAt);
-
-      bytes += generator.text('Processo: ${data['processo_n'] ?? 'N/A'}',
-          styles: const PosStyles(bold: true));
-      bytes += generator.text('Requerente: ${data['requerente'] ?? 'N/A'}',
-          styles: const PosStyles(codeTable: 'CP1252'));
-      bytes += generator.text('Tipo: ${data['tipo'] ?? 'N/A'}',
-          styles: const PosStyles(codeTable: 'CP1252'));
-      bytes += generator.text('Data: $dateStr');
-      bytes += generator.text('Lat: ${data['latitude'] ?? 'N/A'}');
-      bytes += generator.text('Long: ${data['longitude'] ?? 'N/A'}');
-      bytes += generator.text('--------------------------------',
-          styles: const PosStyles(align: PosAlign.center));
-
-      // Dados Específicos dependendo do tipo de vistoria
-      final tipo = (data['tipo']?.toString() ?? '').toLowerCase();
-
-      if (tipo.contains('supress') || tipo.contains('ambiental') || data.containsKey('supressao')) {
-        final s = data['supressao'] ?? data;
-        bytes += generator.text('DADOS DE SUPRESSAO VEGETAL',
-            styles: const PosStyles(bold: true, align: PosAlign.center));
-        bytes += generator.text('Curso d\'agua: ${s['tem_curso_dagua'] == true ? 'Sim' : 'Nao'}');
-        bytes += generator.text('APP Preservada: ${s['app_preservada'] == true ? 'Sim' : 'Nao'}');
-        bytes += generator.text('Bioma: ${s['bioma'] ?? 'N/A'}',
-            styles: const PosStyles(codeTable: 'CP1252'));
-        bytes += generator.text('Obs: ${s['observacoes'] ?? 'Nao informado'}',
-            styles: const PosStyles(codeTable: 'CP1252'));
-
-      } else if (tipo.contains('avicultura') || data.containsKey('avicultura')) {
-        final a = data['avicultura'] ?? data;
-        bytes += generator.text('DADOS DE AVICULTURA',
-            styles: const PosStyles(bold: true, align: PosAlign.center));
-        bytes += generator.text('Modelo: ${a['modelo'] ?? 'N/A'}',
-            styles: const PosStyles(codeTable: 'CP1252'));
-        bytes += generator.text('Criacao: ${a['tipo_criacao'] ?? 'N/A'}',
-            styles: const PosStyles(codeTable: 'CP1252'));
-        bytes += generator.text('Galpoes: ${a['qtd_galpoes'] ?? 'N/A'}');
-        bytes += generator.text('Animais: ${a['qtd_animais'] ?? 'N/A'}');
-
-      } else if (tipo.contains('suinocultura') || data.containsKey('suinocultura')) {
-        final s = data['suinocultura'] ?? data;
-        bytes += generator.text('DADOS DE SUINOCULTURA',
-            styles: const PosStyles(bold: true, align: PosAlign.center));
-        bytes += generator.text('Galpoes: ${s['qtd_galpoes'] ?? 'N/A'}');
-        bytes += generator.text('Animais: ${s['qtd_animais'] ?? 'N/A'}');
-        bytes += generator.text('Fase Prod.: ${s['fase_producao'] ?? 'N/A'}',
-            styles: const PosStyles(codeTable: 'CP1252'));
-      }
-
-      bytes += generator.text('--------------------------------',
-          styles: const PosStyles(align: PosAlign.center));
-
-      // Rodapé
-      bytes += generator.text('ID Local: ${vistoria.localId}',
-          styles: const PosStyles(align: PosAlign.center, width: PosTextSize.size1, height: PosTextSize.size1));
-      bytes += generator.text('Impresso em: ${dateFormat.format(DateTime.now())}',
-          styles: const PosStyles(align: PosAlign.center));
-      bytes += generator.feed(3);
-      bytes += generator.cut();
-
-      // Envia os bytes para a impressora
+      // Envia os bytes brutos para a impressora
       final bool success = await PrintBluetoothThermal.writeBytes(bytes);
       return success;
     } catch (e) {
