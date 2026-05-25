@@ -99,8 +99,8 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
     final isDraft = status == 'rascunho';
     final isSynced = _currentVistoria.synced;
 
-    const primaryGreen = Color(0xFF006b33);
-    const darkBlue = Color(0xFF0d1b3e);
+    const primaryGreen = Color(0xFF70B324);
+    const darkBlue = Color(0xFF00509D);
 
     return Scaffold(
       backgroundColor: const Color(0xFFf3f4f6),
@@ -216,7 +216,7 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
 
     if (isSynced) {
       cardColor = Colors.green.shade50;
-      textColor = const Color(0xFF006b33);
+      textColor = const Color(0xFF70B324);
       icon = Icons.cloud_done_outlined;
       statusTitle = 'Sincronizado na SUDEMA';
       statusDesc = 'Esta vistoria já foi enviada e registrada no banco de dados oficial.';
@@ -290,7 +290,7 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0d1b3e)),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF00509D)),
                 ),
               ],
             ),
@@ -364,7 +364,7 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: val ? const Color(0xFF006b33) : Colors.red.shade800,
+                color: val ? const Color(0xFF70B324) : Colors.red.shade800,
               ),
             ),
           ),
@@ -378,11 +378,11 @@ class _VistoriaDetailPageState extends State<VistoriaDetailPage> {
       padding: const EdgeInsets.only(top: 14, bottom: 8),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF006b33), size: 16),
+          Icon(icon, color: const Color(0xFF70B324), size: 16),
           const SizedBox(width: 6),
           Text(
             title.toUpperCase(),
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF006b33), letterSpacing: 0.5),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF70B324), letterSpacing: 0.5),
           ),
         ],
       ),

@@ -18,7 +18,7 @@ class AviculturaForm extends StatefulWidget {
 
 class _AviculturaFormState extends State<AviculturaForm> {
   // Styles & Colors
-  static const Color forestGreen = Color(0xFF006b33);
+  static const Color forestGreen = Color(0xFF70B324);
   static const Color darkSlate = Color(0xFF1e293b);
   static const Color amberDark = Color(0xFFb45309);
 

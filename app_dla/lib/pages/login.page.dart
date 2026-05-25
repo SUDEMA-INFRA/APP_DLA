@@ -81,8 +81,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF006b33);
-    const darkBlue = Color(0xFF0d1b3e);
+    const primaryGreen = Color(0xFF70B324);
+    const darkBlue = Color(0xFF00509D);
 
     return Scaffold(
       backgroundColor: const Color(0xFFf3f4f6),
@@ -109,14 +109,22 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(color: Color(0xFFe8f5e9), shape: BoxShape.circle),
-                      child: const Icon(Icons.assignment_outlined, size: 32, color: primaryGreen),
+                    Image.asset(
+                      'assets/EcoDataIcon.png',
+                      width: 130,
+                      height: 130,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
-                    const Text('VistoriaDIFLOR', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: darkBlue)),
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, fontFamily: 'Roboto'),
+                        children: [
+                          TextSpan(text: 'Fis', style: TextStyle(color: darkBlue)),
+                          TextSpan(text: 'Con', style: TextStyle(color: primaryGreen)),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     const Text('Acesso para técnicos de campo', style: TextStyle(fontSize: 14, color: Color(0xFF6b7280))),
                     const SizedBox(height: 32),
@@ -199,7 +207,7 @@ class _LoginPageState extends State<LoginPage> {
       fillColor: Colors.white,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFe5e7eb))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFe5e7eb))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF006b33), width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF70B324), width: 1.5)),
     );
   }
 }

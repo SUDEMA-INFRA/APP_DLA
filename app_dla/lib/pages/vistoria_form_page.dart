@@ -971,7 +971,7 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vistoria finalizada! Sincronizando com SUDEMA... 🚀'),
-          backgroundColor: Color(0xFF006b33),
+          backgroundColor: Color(0xFF70B324),
         ),
       );
       Navigator.pop(context, true);
@@ -980,8 +980,8 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF006b33);
-    const darkBlue = Color(0xFF0d1b3e);
+    const primaryGreen = Color(0xFF70B324);
+    const darkBlue = Color(0xFF00509D);
 
     return Scaffold(
       appBar: AppBar(
@@ -1172,7 +1172,7 @@ class _VistoriaFormPageState extends State<VistoriaFormPage> {
       ),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0d1b3e)),
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF00509D)),
       ),
     );
   }

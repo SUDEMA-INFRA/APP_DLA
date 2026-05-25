@@ -18,7 +18,7 @@ class SupressaoForm extends StatefulWidget {
 
 class _SupressaoFormState extends State<SupressaoForm> {
   // Styles & Colors
-  static const Color forestGreen = Color(0xFF006b33);
+  static const Color forestGreen = Color(0xFF70B324);
   static const Color darkSlate = Color(0xFF1e293b);
 
   // States

@@ -50,8 +50,8 @@ class _PinSetupPageState extends State<PinSetupPage> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF006b33);
-    const darkBlue = Color(0xFF0d1b3e);
+    const primaryGreen = Color(0xFF70B324);
+    const darkBlue = Color(0xFF00509D);
 
     return Scaffold(
       backgroundColor: const Color(0xFFf3f4f6),
@@ -129,7 +129,7 @@ class _PinSetupPageState extends State<PinSetupPage> {
   }
 
   InputDecoration _inputDecoration(String hint) {
-    const primaryGreen = Color(0xFF006b33);
+    const primaryGreen = Color(0xFF70B324);
     return InputDecoration(
       hintText: hint,
       filled: true,

@@ -18,7 +18,7 @@ class AgriculturaForm extends StatefulWidget {
 
 class _AgriculturaFormState extends State<AgriculturaForm> {
   // Theme Colors
-  static const Color primaryGreen = Color(0xFF006b33);
+  static const Color primaryGreen = Color(0xFF70B324);
   static const Color darkSlate = Color(0xFF1E293B);
   static const Color errorRed = Color(0xFFDC2626);
 
