@@ -1,8 +1,9 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db import transaction, IntegrityError
 from .models import Vistoria, Municipio
-from .serializers import VistoriaSerializer, MunicipioSerializer
+from .serializers import VistoriaSerializer, VistoriaListSerializer, MunicipioSerializer
 
 class MunicipioViewSet(viewsets.ModelViewSet):
     serializer_class = MunicipioSerializer
@@ -10,16 +11,25 @@ class MunicipioViewSet(viewsets.ModelViewSet):
     queryset = Municipio.objects.all()
 
 class VistoriaViewSet(viewsets.ModelViewSet):
-    serializer_class = VistoriaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return VistoriaListSerializer
+        return VistoriaSerializer
+
     def get_queryset(self):
+        queryset = Vistoria.objects.select_related(
+            'municipio', 'user', 'supressao', 'avicultura',
+            'suinocultura', 'bovinocultura', 'aquicultura',
+            'agroindustrial', 'agricultura'
+        )
         if self.request.user.is_staff:
-            return Vistoria.objects.all()
-        return Vistoria.objects.filter(user=self.request.user)
+            return queryset.all()
+        return queryset.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        local_id = request.data.get('local_id')
+        local_id = request.data.get('local_id') or request.data.get('id')
         
         # Lógica de idempotência: Verifica se já existe uma vistoria com este id para este usuário
         if local_id:
@@ -32,7 +42,18 @@ class VistoriaViewSet(viewsets.ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        self.perform_create(serializer)
+        try:
+            with transaction.atomic():
+                self.perform_create(serializer)
+        except IntegrityError:
+            # Caso concorrência ocorra e outro thread tenha inserido o mesmo UUID
+            if local_id:
+                existing = Vistoria.objects.filter(user=request.user, id=local_id).first()
+                if existing:
+                    serializer = self.get_serializer(existing)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+            raise
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -47,25 +68,27 @@ class VistoriaViewSet(viewsets.ModelViewSet):
         # Standard update for root model
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         
-        # Handle dynamic SubModel update
-        tipo = request.data.get('data', {}).get('tipo') or request.data.get('tipo')
-        if tipo:
-            from .factories import VistoriaSubModelFactory
+        with transaction.atomic():
+            self.perform_update(serializer)
             
-            nested_data = request.data.get('data', {})
-            if not isinstance(nested_data, dict):
-                nested_data = {}
-            merged_source = {**request.data, **nested_data}
-            
-            # Normalize keys
-            normalized_source = {}
-            for k, v in merged_source.items():
-                norm_k = k.replace('qnt_', 'qtd_').replace('quantidade_', 'qtd_')
-                normalized_source[norm_k] = v
+            # Handle dynamic SubModel update
+            tipo = request.data.get('data', {}).get('tipo') or request.data.get('tipo')
+            if tipo:
+                from .factories import VistoriaSubModelFactory
                 
-            VistoriaSubModelFactory.update_sub_model(instance, tipo, normalized_source)
+                nested_data = request.data.get('data', {})
+                if not isinstance(nested_data, dict):
+                    nested_data = {}
+                merged_source = {**request.data, **nested_data}
+                
+                # Normalize keys
+                normalized_source = {}
+                for k, v in merged_source.items():
+                    norm_k = k.replace('qnt_', 'qtd_').replace('quantidade_', 'qtd_')
+                    normalized_source[norm_k] = v
+                    
+                VistoriaSubModelFactory.update_sub_model(instance, tipo, normalized_source)
 
         # Reload instance
         instance.refresh_from_db()

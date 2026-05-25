@@ -132,9 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Recife'
 
 USE_I18N = True
 
@@ -147,13 +147,17 @@ USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 if not CORS_ALLOWED_ORIGINS[0]: # Handle empty string from getenv
     CORS_ALLOWED_ORIGINS = []
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  # Token vale por 1 dia
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30), # Refresh vale por 7 dias
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  # Token vale por 7 dias
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30), # Refresh vale por 30 dias
     'AUTH_HEADER_TYPES': ('Bearer',),
 }

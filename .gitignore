@@ -38,3 +38,9 @@ venv
 .env
 __pycache__/
 *.pyc
+
+rules/
+skills/
+.claude/
+.agents/
+.claude-agent/

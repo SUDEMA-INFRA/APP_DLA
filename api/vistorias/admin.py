@@ -7,7 +7,7 @@ from .models import (
     VistoriaSuinocultura,
     VistoriaBovinocultura,
     VistoriaAquicultura,
-    VistoriaSucroalcooleiro,
+    VistoriaAgroindustrial,
     VistoriaAgricultura,
     Foto
 )
@@ -50,12 +50,12 @@ class VistoriaAquiculturaInline(admin.StackedInline):
     verbose_name = "Formulário de Aquicultura"
     verbose_name_plural = "Formulário de Aquicultura"
 
-class VistoriaSucroalcooleiroInline(admin.StackedInline):
-    model = VistoriaSucroalcooleiro
+class VistoriaAgroindustrialInline(admin.StackedInline):
+    model = VistoriaAgroindustrial
     extra = 0
     max_num = 1
-    verbose_name = "Formulário Sucroalcooleiro"
-    verbose_name_plural = "Formulário Sucroalcooleiro"
+    verbose_name = "Formulário de Atividades Agroindustriais"
+    verbose_name_plural = "Formulário de Atividades Agroindustriais"
 
 class VistoriaAgriculturaInline(admin.StackedInline):
     model = VistoriaAgricultura
@@ -120,7 +120,7 @@ class VistoriaAdmin(admin.ModelAdmin):
         VistoriaSuinoculturaInline,
         VistoriaBovinoculturaInline,
         VistoriaAquiculturaInline,
-        VistoriaSucroalcooleiroInline,
+        VistoriaAgroindustrialInline,
         VistoriaAgriculturaInline,
         FotoInline
     ]

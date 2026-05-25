@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import 'pin_setup.page.dart';
 
@@ -124,8 +125,20 @@ class _LoginPageState extends State<LoginPage> {
                     TextFormField(
                       controller: _cpfController,
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        CpfInputFormatter(),
+                      ],
                       decoration: _inputDecoration('Ex: 000.000.000-00'),
-                      validator: (value) => (value == null || value.isEmpty) ? 'Digite seu CPF' : null,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Digite seu CPF';
+                        }
+                        final cleanCpf = value.replaceAll(RegExp(r'[^0-9]'), '');
+                        if (cleanCpf.length < 11) {
+                          return 'Digite o CPF completo (11 dígitos)';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 20),
                     _buildLabel('Senha', darkBlue),
@@ -187,6 +200,36 @@ class _LoginPageState extends State<LoginPage> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFe5e7eb))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFe5e7eb))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF006b33), width: 1.5)),
+    );
+  }
+}
+
+class CpfInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only allow numbers
+    final text = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    
+    // Cap at 11 digits
+    final digits = text.substring(0, text.length > 11 ? 11 : text.length);
+    
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i == 3 || i == 6) {
+        buffer.write('.');
+      } else if (i == 9) {
+        buffer.write('-');
+      }
+      buffer.write(digits[i]);
+    }
+    
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
