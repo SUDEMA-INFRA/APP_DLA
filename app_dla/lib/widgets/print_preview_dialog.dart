@@ -184,7 +184,7 @@ class PrintPreviewDialog extends StatelessWidget {
                         icon: const Icon(Icons.print, size: 18),
                         label: const Text('Imprimir', style: TextStyle(fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF006b33),
+                          backgroundColor: const Color(0xFF70B324),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

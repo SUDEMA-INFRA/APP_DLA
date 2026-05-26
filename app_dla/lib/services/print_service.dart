@@ -102,12 +102,12 @@ class PrintService {
   // Monta a estrutura de linhas do recibo (usada tanto no app quanto na impressora)
   List<ReceiptLine> buildReceiptLines(Vistoria vistoria, {String? technicianName}) {
     final List<ReceiptLine> lines = [];
-    const int cols = 42;
+    const int cols = 32;
     final String separator = '-' * cols;
     final String doubleSeparator = '=' * cols;
 
     void addLine(String text, {PosAlign align = PosAlign.left, bool bold = false, bool doubleSize = false}) {
-      final int limit = doubleSize ? 21 : 42;
+      final int limit = doubleSize ? 16 : 32;
       final wrapped = wrapText(text, limit);
       for (var chunk in wrapped) {
         lines.add(ReceiptLine(chunk, align: align, bold: bold, doubleSize: doubleSize));
@@ -510,8 +510,8 @@ class PrintService {
 
     // Inicialização da impressora (Zera configurações anteriores)
     bytes += [27, 64]; // ESC @
-    // Configura a impressora para usar a Fonte B (Fonte compacta/tamanho menor 9x17)
-    bytes += [27, 77, 1]; // ESC M 1
+    // Configura a impressora para usar a Fonte A  (Fonte normal 11x17)
+    bytes += [27, 77, 0]; // ESC M 1
 
     final lines = buildReceiptLines(vistoria, technicianName: technicianName);
 

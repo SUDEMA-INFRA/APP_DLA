@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Importação do cofre
-import 'package:app_dla/pages/login.page.dart';
-import 'package:app_dla/pages/offline_selection.page.dart';
-import 'package:app_dla/pages/vistoria_form_page.dart';
-import 'package:app_dla/pages/vistoria_detail_page.dart';
-import 'package:app_dla/services/database_helper.dart';
-import 'package:app_dla/services/vistoria_service.dart';
-import 'package:app_dla/services/print_service.dart';
+import 'pages/login.page.dart';
+import 'pages/offline_selection.page.dart';
+import 'pages/vistoria_form_page.dart';
+import 'pages/vistoria_detail_page.dart';
+import 'services/database_helper.dart';
+import 'services/vistoria_service.dart';
+import 'services/print_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'APP DLA',
+      title: 'FisCon',
       theme: ThemeData(
         // Correção de sintaxe: Adicionado "ColorScheme" antes de ".fromSeed"
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -247,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return AlertDialog(
           title: const Row(
             children: [
-              Icon(Icons.print_outlined, color: Color(0xFF006b33)),
+              Icon(Icons.print_outlined, color: Color(0xFF70B324)),
               SizedBox(width: 8),
               Text('Imprimir Lote'),
             ],
@@ -259,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006b33), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF70B324), foregroundColor: Colors.white),
               onPressed: () => Navigator.pop(context, true),
               child: const Text('Confirmar', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
@@ -298,8 +298,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF006b33);
-    const darkBlue = Color(0xFF0d1b3e);
+    const primaryGreen = Color(0xFF70B324);
+    const darkBlue = Color(0xFF00509D);
 
     return Scaffold(
       appBar: AppBar(
@@ -380,7 +380,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   CircleAvatar(
                     backgroundColor: primaryGreen.withOpacity(0.1),
-                    child: const Icon(Icons.person, color: Color(0xFF006b33)),
+                    child: const Icon(Icons.person, color: Color(0xFF70B324)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -427,7 +427,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const SizedBox(height: 20),
 
           // Seção Estatísticas
-          const Text('Painel de Licenciamento', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0d1b3e))),
+          const Text('Painel de Licenciamento', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF00509D))),
           const SizedBox(height: 12),
 
           GridView.count(
@@ -457,7 +457,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF006b33),
+                  backgroundColor: const Color(0xFF70B324),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
